@@ -16,9 +16,8 @@ from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFil
 
 from i18n.I18n import I18n
 from gui.enums.Language import Language
-from gui.components.PhaseReadyWidget import PhaseReadyWidget
+from gui.components.TreeViewUI import TreeViewUI
 from gui.components.AboutDialog import AboutDialog
-from gui.enums.GUIState import GUIState
 
 from lib.AppConfig import app_conf_get
 
@@ -55,12 +54,6 @@ class MainWindow(QMainWindow):
         """Initiates application UI"""
         logging.debug('Initializing MainWindow GUI')
 
-        if self._is_in_state(GUIState.INIT_UI):
-            logging.warn('Already initializing')
-            return
-
-        self._set_state(GUIState.INIT_UI)
-
         self._init_menu()
 
         self.setWindowTitle(self.i18n.translate('GUI.MAIN.WINDOW.TITLE'))
@@ -68,9 +61,7 @@ class MainWindow(QMainWindow):
 
         self.config = {}
 
-        self._init_phases()
-
-        self.next_phase()
+        self._init_widgets()
 
         self.resize(self.settings.window['width'], self.settings.window['height'])
 
@@ -105,8 +96,7 @@ class MainWindow(QMainWindow):
 
             self._reset_phases()
             self._init_menu()
-            self._init_phases()
-            self.next_phase()
+            self._init_widgets()
         else:
             logging.info('Cancelled selecting output directory')
 
@@ -199,53 +189,34 @@ class MainWindow(QMainWindow):
         self._reset_phases()
         self.setWindowTitle(self.i18n.translate('GUI.MAIN.WINDOW.TITLE'))
         self._init_menu()
-        self._init_phases()
-        self.next_phase()
+        self._init_widgets()
 
-    def _phase_ready(self):
-        """Phase ready init"""
-        if self._is_in_state(GUIState.PHASE_READY):
-            logging.warn('Already in phase {}'.format(self.state.name))
-            return
-        self._set_state(GUIState.PHASE_READY)
-        self.show_message(self.i18n.translate('GUI.MAIN.LOG.PHASE.READY'))
-
-        self.phase_ready_widget.init_ui()
-        self.setCentralWidget(self.phase_ready_widget)
+    def _prepare_widgets(self):
+        """Prepares the widgets"""
 
     def _reset_phases(self):
         """Resets all phases"""
         logging.info('Resetting all phases')
 
-        self._set_state(GUIState.INIT_UI)
-
         self.setCentralWidget(None)
-        self.phase_ready_widget = None
+        self.tree_view_ui = None
 
         self.config = {}
 
-        self._init_phases()
+        self._init_widgets()
 
-    def _init_phases(self):
+    def _init_widgets(self):
         """Initializes all phases"""
         logging.info('Initializing all phases')
 
-        self.phase_ready_widget = PhaseReadyWidget(
-                                        log=self.show_message,
-                                        cb_next_phase=self.next_phase,
-                                        i18n=self.i18n,
-                                        settings=self.settings,
-                                        image_cache=self.image_cache)
+        self.tree_view_ui = TreeViewUI(i18n=self.i18n,
+                                       settings=self.settings,
+                                       log=self.show_message,
+                                       image_cache=self.image_cache)
+        self.tree_view_ui.init_ui()
+        self.setCentralWidget(self.tree_view_ui)
 
-    def next_phase(self):
-        """Goes to the next phase"""
-        logging.info('Current phase: {}'.format(self.state.name))
-        if self.state == GUIState.INIT_UI:
-            self._phase_ready()
-        elif self.state == GUIState.PHASE_READY:
-            logging.info('You\'ve reached the final phase')
-        else:
-            logging.warn('No next phase defined')
+        self.show_message(self.i18n.translate('GUI.MAIN.LOG.TREEVIEW'))
 
     def show_message(self, msg=''):
         """Shows a message in the status bar

@@ -21,26 +21,24 @@ from lib.AppConfig import app_conf_get
 from gui.enums.Language import Language
 
 
-class PhaseReadyWidget(QWidget):
-    """Phase Ready widget GUI"""
+class TreeViewUI(QWidget):
+    """Tree View GUI"""
 
-    def __init__(self, i18n, settings, log, cb_next_phase, image_cache):
+    def __init__(self, i18n, settings, log, image_cache):
         """Initializes the widget
 
         :param i18n: The I18n
         :param settings: The settings
         :param log: The (end user) message log
-        :param cb_next_phase: Next phase callback
         :param image_cache: The image cache
         """
         super().__init__()
 
-        logging.debug('Initializing PhaseReadyWidget')
+        logging.debug('Initializing TreeViewUI')
 
         self.i18n = i18n
         self.settings = settings
         self.log = log
-        self.cb_next_phase = cb_next_phase
         self.image_cache = image_cache
         
         self.recipe_suffix = app_conf_get('suffix.recipe', '.json')
@@ -64,7 +62,7 @@ class PhaseReadyWidget(QWidget):
 
         # Components
 
-        self.label_header = QLabel(self.i18n.translate('GUI.PHASE.READY.HEADER'))
+        self.label_header = QLabel(self.i18n.translate('GUI.TREEVIEW.HEADER'))
         self.label_header.setFont(self.font_label_header)
         self.label_header.setAlignment(Qt.AlignCenter)
 
@@ -88,7 +86,7 @@ class PhaseReadyWidget(QWidget):
         self.progressbar = QProgressBar()
         self.progressbar.setTextVisible(False)
 
-        self.label_current_folder = QLabel(self.i18n.translate('GUI.PHASE.READY.CURRENT_FOLDER').format(self.settings.recipe_folder, self._get_formatted_current_folder()))
+        self.label_current_folder = QLabel(self.i18n.translate('GUI.TREEVIEW.CURRENT_FOLDER').format(self.settings.recipe_folder))
         self.label_current_folder.setFont(self.font_label_info)
         self.label_current_folder.setAlignment(Qt.AlignLeft)
 
@@ -134,7 +132,7 @@ class PhaseReadyWidget(QWidget):
 
     def _refresh_view(self):
         """Refreshes the view"""
-        self.log(self.i18n.translate('GUI.PHASE.READY.LOG.LOAD_COOKBOOK.START'))
+        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.LOAD_COOKBOOK.START'))
         logging.info('Loading cookbook')
         self._disable()
         self.progressbar.setValue(0)
@@ -147,7 +145,7 @@ class PhaseReadyWidget(QWidget):
         self.progressbar.setValue(100)
         self.progressbar.reset()
         self._enable()
-        self.log(self.i18n.translate('GUI.PHASE.READY.LOG.LOAD_COOKBOOK.DONE'))
+        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.LOAD_COOKBOOK.DONE'))
         logging.info('Loaded cookbook')
 
     def _load_project_structure(self, startpath, tree):
@@ -210,9 +208,3 @@ class PhaseReadyWidget(QWidget):
         for comp in self.components:
             comp.setEnabled(True)
         self.is_enabled = True
-
-    def _start(self):
-        """Starts"""
-        logging.debug('Starting')
-        if self.cb_next_phase:
-            self.cb_next_phase()
