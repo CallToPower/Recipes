@@ -129,6 +129,7 @@ class TreeViewUI(QWidget):
             logging.info('Double-clicked "{}", loading recipe'.format(path_info))
             json_recipe = load_json_recipe(path_info)
             print(json_recipe)
+            # TODO: Recipe UI
 
     def _refresh_view(self):
         """Refreshes the view"""
