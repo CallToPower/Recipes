@@ -1,0 +1,11 @@
+**/.vscode/*
+**/__pycache__/*
+.DS_Store
+files/**
+/venv
+/target
+/resources
+/logs
+/build
+/dist
+settings.json

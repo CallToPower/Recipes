@@ -1,0 +1,47 @@
+{
+    "name": "Supersaftiger Apfelkuchen",
+    "ingredients": [
+        {
+            "quantity": "125 g",
+            "name": "Butter",
+            "addition": "weich"
+        },
+        {
+            "quantity": "125 g",
+            "name": "Zucker"
+        },
+        {
+            "quantity": "3",
+            "name": "Eier"
+        },
+        {
+            "quantity": "1/2 Packung",
+            "name": "Backpulver"
+        },
+        {
+            "quantity": "250 g",
+            "name": "Mehl"
+        },
+        {
+            "quantity": "1 1/2 kg",
+            "name": "Äpfel",
+            "addition": "geschält, entkernt, geachtelt"
+        },
+        {
+            "name": "Fett für die Form"
+        },
+        {
+            "quantity": "Viel",
+            "name": "Butter zum Bestreichen"
+        },
+        {
+            "quantity": "Viel",
+            "name": "Zucker oder Zimtzucker"
+        }
+    ],
+    "description": "Aus der Margarine oder Butter, dem Zucker, den Eiern, dem Backpulver und dem Mehl einen Rührteig herstellen. Die Äpfel in große Stücke schneiden (je nach Größe der Äpfel z. B. Achtelstückchen) und unter den Teig heben. Das Ganze dann in eine gefettete Springform geben und etwas glätten (wenn auch leichter gesagt als getan).\nIm vorgeheizten Backofen bei 200 °C Ober-/Unterhitze auf der unteren Schiene ca. 50 bis 55 Minuten backen. Nach 45 Minuten mit viel Butter bestreichen und mit ordentlich Zucker oder Zimt-Zucker-Mischung bestreuen.\nFalls der Kuchen schon früher braun werden sollte, den Kuchen einfach für die restliche Backzeit mit Backpapier abdecken.\nLecker, super saftig und passt super zu Schlagsahne. Es scheint zwar, dass es zu viele Äpfel sind im Verhältnis zum Teig, aber keine Angst. Der Teig sucht sich seinen Weg durch die Äpfel und dient eigentlich nur als zusammenhaltende Form für die Äpfel.",
+    "source": {
+        "name": "Chefkoch",
+        "url": "https://www.chefkoch.de/rezepte/1140221220253617/Supersaftiger-Apfelkuchen.html"
+    }
+}
