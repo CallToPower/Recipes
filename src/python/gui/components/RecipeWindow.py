@@ -14,9 +14,10 @@ import platform
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFileDialog, QLabel, QWidget, QSizePolicy, QGridLayout
+from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFileDialog, QLabel, QWidget, QSizePolicy, QGridLayout, QTableView
 
 from i18n.I18n import I18n
+from gui.components.IngredientsTableModel import IngredientsTableModel
 
 from lib.AppConfig import app_conf_get
 
@@ -113,6 +114,13 @@ class RecipeWindow(QMainWindow):
         self.line_2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.line_2.setStyleSheet(self.line_css)
 
+        self.comp_ingredients = []
+
+        self.table_ingredients = QTableView()
+        headers = [self.i18n.translate('GUI.RECIPE.HEADERS.QUANTITY'), self.i18n.translate('GUI.RECIPE.HEADERS.NAME'), self.i18n.translate('GUI.RECIPE.HEADERS.ADDITION')]
+        self.model = IngredientsTableModel(self.recipe.ingredients, headers, self.on_ingredients_changed)
+        self.table_ingredients.setModel(self.model)
+
         # Layout
 
         self.grid = QGridLayout()
@@ -124,9 +132,17 @@ class RecipeWindow(QMainWindow):
         self.grid.addWidget(self.line_1, curr_gridid, 0, 1, 4)
         self.grid.addWidget(self.label_header, curr_gridid, 4, 1, 2)
         self.grid.addWidget(self.line_2, curr_gridid, 6, 1, 4)
+        
+        curr_gridid += 1
+        self.grid.addWidget(self.table_ingredients, curr_gridid, 0, 5, 10)
 
         self.widget.setLayout(self.grid)
 
+    def on_ingredients_changed(self, lst):
+        """On ingredients changed
+        :param lst: Ingredients list
+        """
+        print(lst)
 
     def _center(self):
         """Centers the window on the screen"""
