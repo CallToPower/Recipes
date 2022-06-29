@@ -13,19 +13,20 @@ from PyQt5.QtCore import QAbstractTableModel
 
 from classes.Ingredient import Ingredient
 
-class IngredientsTableModel(QAbstractTableModel):
+class LinksTableModel(QAbstractTableModel):
 
-    def __init__(self, ingredients=[], headers_h=['Quantity', 'Name', 'Further Information'], cb_change=None):
+    def __init__(self, links=[], headers_h=['Name', 'URL'], headers_v=None, cb_change=None):
         """Initializes the model
-        :param ingredients: The ingredients list
+        :param links: The links list
         :param headers_h: The horizontal headers list
+        :param headers_v: The vertical headers list
         :param cb_change: The callback on data changed
         """
-        super(IngredientsTableModel, self).__init__()
+        super(LinksTableModel, self).__init__()
 
-        self._data = self._ingredients_to_datalist(ingredients)
+        self._data = self._links_to_datalist(links)
         self._headers_h = headers_h
-        self._headers_v = []
+        self._headers_v = headers_v if headers_v else [i for i in range(0, len(self._data))]
         self._cb_change = cb_change
 
     # @override
@@ -51,7 +52,7 @@ class IngredientsTableModel(QAbstractTableModel):
             logging.debug('Data changed. [row={}, column={}, old="{}", new="{}"]'.format(index.row(), index.column(), value_old, value))
             self._data[index.row()][index.column()] = value.strip()
             if self._cb_change:
-                self._cb_change(self._datalist_to_ingredients())
+                self._cb_change(self._datalist_to_links())
         except Exception as e:
             logging.error('Could not change data[row={}, column={}, value={}]: {}'.format(index.row(), index.column(), value, e))
             return False
@@ -69,6 +70,8 @@ class IngredientsTableModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
                 return self._headers_h[section]
+            if orientation == Qt.Vertical:
+                return self._headers_v[section]
 
     # @override
     def rowCount(self, index=QModelIndex()):
@@ -82,12 +85,12 @@ class IngredientsTableModel(QAbstractTableModel):
     def flags(self, index):
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
 
-    def _ingredients_to_datalist(self, ingredients):
-        """Converts a list of Ingredient objects to a "plain" data list
-        :param ingredients: The list of Ingredient objects
+    def _links_to_datalist(self, links):
+        """Converts a list of Link objects to a "plain" data list
+        :param links: The list of Link objects
         """
-        return [[ingredient.quantity, ingredient.name, ingredient.addition] for ingredient in ingredients]
+        return [[link.name, link.url] for link in links]
 
-    def _datalist_to_ingredients(self):
-        """Converts a "plain" data list to a list of Ingredient objects"""
-        return [{'quantity': d[0], 'name': d[1], 'addition': d[2]} for d in self._data]
+    def _datalist_to_links(self):
+        """Converts a "plain" data list to a list of Link objects"""
+        return [{'name': d[0], 'url': d[1]} for d in self._data]

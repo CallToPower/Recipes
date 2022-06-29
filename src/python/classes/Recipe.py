@@ -9,7 +9,7 @@
 from classes.Exceptions import ArgumentsException
 
 from classes.Ingredient import Ingredient
-from classes.Source import Source
+from classes.Link import Link
 
 """Recipe"""
 
@@ -22,9 +22,9 @@ class Recipe():
             raise ArgumentsException('Could not extract arguments from {}'.format(args))
         self.name = args['name']
         self.ingredients = [Ingredient(x) for x in args['ingredients']] if 'ingredients' in args else []
-        self.description = args['description'] if 'description' in args else ''
-        self.source = Source(args['source']) if 'source' in args else {}
+        self.steps = args['steps'] if 'steps' in args else []
+        self.links = [Link(x) for x in args['links']] if 'links' in args else []
 
     def __str__(self):
         """to string"""
-        return 'Recipe[name="{}",\ningredients=[{}],\ndescription="{}",\nsource={}]'.format(self.name, ', '.join(str(x) for x in self.ingredients), self.description, self.source)
+        return 'Recipe[name="{}",\ningredients=[{}],\nsteps="{}",\nlinks={}]'.format(self.name, ', '.join(str(x) for x in self.ingredients), self.steps, self.links)

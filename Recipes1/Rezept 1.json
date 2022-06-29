@@ -39,9 +39,19 @@
             "name": "Zucker oder Zimtzucker"
         }
     ],
-    "description": "Aus der Margarine oder Butter, dem Zucker, den Eiern, dem Backpulver und dem Mehl einen Rührteig herstellen. Die Äpfel in große Stücke schneiden (je nach Größe der Äpfel z. B. Achtelstückchen) und unter den Teig heben. Das Ganze dann in eine gefettete Springform geben und etwas glätten (wenn auch leichter gesagt als getan).\nIm vorgeheizten Backofen bei 200 °C Ober-/Unterhitze auf der unteren Schiene ca. 50 bis 55 Minuten backen. Nach 45 Minuten mit viel Butter bestreichen und mit ordentlich Zucker oder Zimt-Zucker-Mischung bestreuen.\nFalls der Kuchen schon früher braun werden sollte, den Kuchen einfach für die restliche Backzeit mit Backpapier abdecken.\nLecker, super saftig und passt super zu Schlagsahne. Es scheint zwar, dass es zu viele Äpfel sind im Verhältnis zum Teig, aber keine Angst. Der Teig sucht sich seinen Weg durch die Äpfel und dient eigentlich nur als zusammenhaltende Form für die Äpfel.",
-    "source": {
-        "name": "Chefkoch",
-        "url": "https://www.chefkoch.de/rezepte/1140221220253617/Supersaftiger-Apfelkuchen.html"
-    }
+    "steps": [
+        "Aus der Margarine oder Butter, dem Zucker, den Eiern, dem Backpulver und dem Mehl einen Rührteig herstellen.",
+        "Die Äpfel in große Stücke schneiden (je nach Größe der Äpfel z. B. Achtelstückchen) und unter den Teig heben.",
+        "Das Ganze dann in eine gefettete Springform geben und etwas glätten (wenn auch leichter gesagt als getan).",
+        "Im vorgeheizten Backofen bei 200 °C Ober-/Unterhitze auf der unteren Schiene ca. 50 bis 55 Minuten backen.",
+        "Nach 45 Minuten mit viel Butter bestreichen und mit ordentlich Zucker oder Zimt-Zucker-Mischung bestreuen.",
+        "Falls der Kuchen schon früher braun werden sollte, den Kuchen einfach für die restliche Backzeit mit Backpapier abdecken.",
+        "Lecker, super saftig und passt super zu Schlagsahne. Es scheint zwar, dass es zu viele Äpfel sind im Verhältnis zum Teig, aber keine Angst. Der Teig sucht sich seinen Weg durch die Äpfel und dient eigentlich nur als zusammenhaltende Form für die Äpfel."
+    ],
+    "links": [
+        {
+            "name": "Chefkoch",
+            "url": "https://www.chefkoch.de/rezepte/1140221220253617/Supersaftiger-Apfelkuchen.html"
+        }
+    ]
 }

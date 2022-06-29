@@ -8,13 +8,13 @@
 
 from classes.Exceptions import ArgumentsException
 
-"""Source"""
+"""Link"""
 
-class Source():
-    """Source"""
+class Link():
+    """Link"""
 
     def __init__(self, obj):
-        """Initializes the source
+        """Initializes the link
         
         :param obj: Object containing information
         """
@@ -25,4 +25,4 @@ class Source():
 
     def __str__(self):
         """to string"""
-        return 'Source[name={}, url={}]'.format(self.name, self.url)
+        return 'Link[name={}, url={}]'.format(self.name, self.url)

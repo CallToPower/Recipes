@@ -13,27 +13,27 @@ from PyQt5.QtCore import QAbstractTableModel
 
 from classes.Ingredient import Ingredient
 
-class IngredientsTableModel(QAbstractTableModel):
+class StepsTableModel(QAbstractTableModel):
 
-    def __init__(self, ingredients=[], headers_h=['Quantity', 'Name', 'Further Information'], cb_change=None):
+    def __init__(self, steps=[], headers_v=None, cb_change=None):
         """Initializes the model
-        :param ingredients: The ingredients list
-        :param headers_h: The horizontal headers list
+        :param steps: The steps list
+        :param headers_v: The vertical headers list
         :param cb_change: The callback on data changed
         """
-        super(IngredientsTableModel, self).__init__()
+        super(StepsTableModel, self).__init__()
 
-        self._data = self._ingredients_to_datalist(ingredients)
-        self._headers_h = headers_h
-        self._headers_v = []
+        self._data = steps
+        self._headers_h = []
+        self._headers_v = headers_v if headers_v else [i for i in range(0, len(self._data))]
         self._cb_change = cb_change
 
     # @override
     def data(self, index, role=Qt.DisplayRole):
         if role == Qt.EditRole:
-            return self._data[index.row()][index.column()]
+            return self._data[index.row()]
         if role == Qt.DisplayRole:
-            return self._data[index.row()][index.column()]
+            return self._data[index.row()]
         else:
             return QVariant()
 
@@ -43,15 +43,15 @@ class IngredientsTableModel(QAbstractTableModel):
             logging.debug('Not edit role')
             return False
         try:
-            value_old = self._data[index.row()][index.column()]
+            value_old = self._data[index.row()]
             if value_old.strip() == value.strip():
                 logging.debug('Data did not change: [row={}, column={}, value={}]'.format(index.row(), index.column(), value))
                 return False
 
             logging.debug('Data changed. [row={}, column={}, old="{}", new="{}"]'.format(index.row(), index.column(), value_old, value))
-            self._data[index.row()][index.column()] = value.strip()
+            self._data[index.row()] = value.strip()
             if self._cb_change:
-                self._cb_change(self._datalist_to_ingredients())
+                self._cb_change(self._data)
         except Exception as e:
             logging.error('Could not change data[row={}, column={}, value={}]: {}'.format(index.row(), index.column(), value, e))
             return False
@@ -67,8 +67,8 @@ class IngredientsTableModel(QAbstractTableModel):
     # @override
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
-                return self._headers_h[section]
+            if orientation == Qt.Vertical:
+                return self._headers_v[section]
 
     # @override
     def rowCount(self, index=QModelIndex()):
@@ -76,18 +76,8 @@ class IngredientsTableModel(QAbstractTableModel):
 
     # @override
     def columnCount(self, index=QModelIndex()):
-        return len(self._data[0])
+        return 1
 
     # @override
     def flags(self, index):
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
-
-    def _ingredients_to_datalist(self, ingredients):
-        """Converts a list of Ingredient objects to a "plain" data list
-        :param ingredients: The list of Ingredient objects
-        """
-        return [[ingredient.quantity, ingredient.name, ingredient.addition] for ingredient in ingredients]
-
-    def _datalist_to_ingredients(self):
-        """Converts a "plain" data list to a list of Ingredient objects"""
-        return [{'quantity': d[0], 'name': d[1], 'addition': d[2]} for d in self._data]
