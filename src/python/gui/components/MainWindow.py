@@ -195,8 +195,8 @@ class MainWindow(QMainWindow):
         """Prepares the widgets"""
 
     def _reset_phases(self):
-        """Resets all phases"""
-        logging.info('Resetting all phases')
+        """Resets phases"""
+        logging.info('Resetting phases')
 
         self.setCentralWidget(None)
         self.tree_view_ui = None
@@ -206,8 +206,8 @@ class MainWindow(QMainWindow):
         self._init_widgets()
 
     def _init_widgets(self):
-        """Initializes all phases"""
-        logging.info('Initializing all phases')
+        """Initializes widgets"""
+        logging.info('Initializing widgets')
 
         self.tree_view_ui = TreeViewUI(i18n=self.i18n,
                                        settings=self.settings,

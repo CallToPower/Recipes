@@ -27,6 +27,8 @@ _app_config = {
     'label.header.small.font.size': 14,
     'label.info.font.size': 12,
     'label.info.small.font.size': 10,
+    'window.recipe.width': 600,
+    'window.recipe.height': 800,
     'logging.log_to_file': False,
     'logging.loglevel': logging.DEBUG,
     'logging.format': '[%(asctime)s] [%(levelname)-5s] [%(module)-20s:%(lineno)-4s] %(message)s',

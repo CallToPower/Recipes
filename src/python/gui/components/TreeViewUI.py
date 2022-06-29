@@ -19,6 +19,7 @@ from lib.Utils import load_json_recipe
 from lib.AppConfig import app_conf_get
 
 from gui.enums.Language import Language
+from gui.components.RecipeWindow import RecipeWindow
 
 
 class TreeViewUI(QWidget):
@@ -44,6 +45,7 @@ class TreeViewUI(QWidget):
         self.recipe_suffix = app_conf_get('suffix.recipe', '.json')
 
         self.components = []
+        self.recipe_windows = {}
         self.current_folder = self.settings.recipe_folder
 
     def init_ui(self):
@@ -128,8 +130,28 @@ class TreeViewUI(QWidget):
         if os.path.isfile(path_info) and path_info.endswith(self.recipe_suffix):
             logging.info('Double-clicked "{}", loading recipe'.format(path_info))
             json_recipe = load_json_recipe(path_info)
-            print(json_recipe)
-            # TODO: Recipe UI
+            if json_recipe:
+                str_id = path_info
+                if str_id in self.recipe_windows:
+                    logging.debug('Recipe window already exists, activating')
+                    self.recipe_windows[str_id].activateWindow()
+                else:
+                    logging.debug('Recipe window does not exist, creating new')
+                    recipe_window = RecipeWindow(self.settings, self.i18n, str_id, json_recipe, self._recipe_window_closed)
+                    self.recipe_windows[str_id] = recipe_window
+                    recipe_window.init_ui()
+                    recipe_window.show()
+            else:
+                logging.error('Could not load recipe "{}"'.format(path_info))
+        else:
+            logging.error('Does not appear to be a recipe: "{}"'.format(path_info))
+
+    def _recipe_window_closed(self, id):
+        """On recipe window close
+        :param id: The ID of the window
+        """
+        logging.debug('Recipe window "{}" closed'.format(id))
+        del self.recipe_windows[id]
 
     def _refresh_view(self):
         """Refreshes the view"""

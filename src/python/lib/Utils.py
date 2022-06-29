@@ -60,7 +60,7 @@ def load_json(basedir, file, base_path=None):
     if not os.path.exists(file_path):
         raise FileNotFoundError('Could not load JSON file "{}"'.format(file_path))
     try:
-        with open(file_path) as file_json:
+        with open(file_path, 'r', encoding='utf-8') as file_json:
             return json.load(file_json)
     except Exception as e:
         raise JsonProcessingError('Could not process JSON file "{}": {}'.format(file_path, e))
@@ -75,7 +75,7 @@ def load_json_recipe(filename):
     if not os.path.exists(filename):
         raise FileNotFoundError('Could not load JSON file "{}"'.format(filename))
     try:
-        with open(filename) as file_json:
+        with open(filename, 'r', encoding='utf-8') as file_json:
             dict_json = json.load(file_json)
         return Recipe(**dict_json)
     except Exception as e:
