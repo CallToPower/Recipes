@@ -15,7 +15,7 @@ from classes.Ingredient import Ingredient
 
 class IngredientsTableModel(QAbstractTableModel):
 
-    def __init__(self, ingredients=[], headers=['Quantity', 'Name', ''], cb_change=None):
+    def __init__(self, ingredients=[], headers=['Quantity', 'Name', 'Further Information'], cb_change=None):
         """Initializes the model
         :param ingredients: The ingredients list
         :param headers: The header list
@@ -28,16 +28,6 @@ class IngredientsTableModel(QAbstractTableModel):
 
         self._data = self._ingredients_to_datalist(ingredients)
 
-    def _ingredients_to_datalist(self, ingredients):
-        """Converts a list of Ingredient objects to a "plain" data list
-        :param ingredients: The list of Ingredient objects
-        """
-        return [[ingredient.quantity, ingredient.name, ingredient.addition] for ingredient in ingredients]
-
-    def _datalist_to_ingredients(self):
-        """Converts a "plain" data list to a list of Ingredient objects"""
-        return [{'quantity': d[0], 'name': d[1], 'addition': d[2]} for d in self._data]
-
     def data(self, index, role=Qt.DisplayRole):
         if role == Qt.EditRole:
             return self._data[index.row()][index.column()]
@@ -47,12 +37,17 @@ class IngredientsTableModel(QAbstractTableModel):
             return QVariant()
 
     def setData(self, index, value, role):
-        logging.debug('Data changed[row={}, column={}, value={}]'.format(index.row(), index.column(), value))
         if not Qt.EditRole:
             logging.debug('Not edit role')
             return False
         try:
-            self._data[index.row()][index.column()] = value
+            value_old = self._data[index.row()][index.column()]
+            if value_old.strip() == value.strip():
+                logging.debug('Data did not change: [row={}, column={}, value={}]'.format(index.row(), index.column(), value))
+                return False
+
+            logging.debug('Data changed: [row={}, column={}, value={}]'.format(index.row(), index.column(), value))
+            self._data[index.row()][index.column()] = value.strip()
             if self.cb_change:
                 self.cb_change(self._datalist_to_ingredients())
         except Exception as e:
@@ -76,3 +71,13 @@ class IngredientsTableModel(QAbstractTableModel):
 
     def flags(self, index):
         return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+
+    def _ingredients_to_datalist(self, ingredients):
+        """Converts a list of Ingredient objects to a "plain" data list
+        :param ingredients: The list of Ingredient objects
+        """
+        return [[ingredient.quantity, ingredient.name, ingredient.addition] for ingredient in ingredients]
+
+    def _datalist_to_ingredients(self):
+        """Converts a "plain" data list to a list of Ingredient objects"""
+        return [{'quantity': d[0], 'name': d[1], 'addition': d[2]} for d in self._data]
