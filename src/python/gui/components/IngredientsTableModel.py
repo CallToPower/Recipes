@@ -94,4 +94,9 @@ class IngredientsTableModel(QAbstractTableModel):
 
     def _datalist_to_ingredients(self):
         """Converts a "plain" data list to a list of Ingredient objects"""
-        return [{'quantity': d[0], 'name': d[1], 'addition': d[2]} for d in self._data]
+        lst = []
+        for d in self._data:
+            ing = Ingredient()
+            ing.init_from_attr(d[0], d[1], d[2])
+            lst.append(ing)
+        return lst

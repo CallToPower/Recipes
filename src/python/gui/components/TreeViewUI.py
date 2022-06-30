@@ -64,14 +64,14 @@ class TreeViewUI(QWidget):
 
         # Components
 
-        self.label_header = QLabel(self.i18n.translate('GUI.TREEVIEW.HEADER'))
-        self.label_header.setFont(self.font_label_header)
-        self.label_header.setAlignment(Qt.AlignCenter)
-
         self.line_1 = QWidget()
         self.line_1.setFixedHeight(1)
         self.line_1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.line_1.setStyleSheet(self.line_css)
+
+        self.label_header = QLabel(self.i18n.translate('GUI.TREEVIEW.HEADER'))
+        self.label_header.setFont(self.font_label_header)
+        self.label_header.setAlignment(Qt.AlignCenter)
 
         self.line_2 = QWidget()
         self.line_2.setFixedHeight(1)
@@ -131,14 +131,13 @@ class TreeViewUI(QWidget):
             logging.info('Double-clicked "{}", loading recipe'.format(path_info))
             json_recipe = load_json_recipe(path_info)
             if json_recipe:
-                str_id = path_info
-                if str_id in self.recipe_windows:
+                if path_info in self.recipe_windows:
                     logging.debug('Recipe window already exists, activating')
-                    self.recipe_windows[str_id].activateWindow()
+                    self.recipe_windows[path_info].activateWindow()
                 else:
                     logging.debug('Recipe window does not exist, creating new')
-                    recipe_window = RecipeWindow(self.settings, self.i18n, str_id, json_recipe, self._recipe_window_closed)
-                    self.recipe_windows[str_id] = recipe_window
+                    recipe_window = RecipeWindow(self.settings, self.i18n, path_info, json_recipe, self._recipe_window_closed)
+                    self.recipe_windows[path_info] = recipe_window
                     recipe_window.init_ui()
                     recipe_window.show()
             else:

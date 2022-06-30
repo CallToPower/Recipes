@@ -24,7 +24,7 @@ class StepsTableModel(QAbstractTableModel):
         """
         super(StepsTableModel, self).__init__()
 
-        self._data = steps
+        self._data = self._copy_steps(steps)
         self._headers_h = []
         self._headers_v = headers_v if headers_v else [i for i in range(0, len(self._data))]
         self._cb_change = cb_change
@@ -85,3 +85,9 @@ class StepsTableModel(QAbstractTableModel):
     # @override
     def flags(self, index):
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
+
+    def _copy_steps(self, steps):
+        """Copies the steps
+        :param steps: The steps list
+        """
+        return [s for s in steps]

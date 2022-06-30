@@ -99,3 +99,37 @@ def load_json_recipe(filename):
         return Recipe(**dict_json)
     except Exception as e:
         raise JsonProcessingError('Could not process JSON file "{}": {}'.format(filename, e))
+
+def save_recipe(recipe, path):
+    """
+    Tries to save the recipe to an existing file
+    :param recipe: The recipe
+    :param path: The path
+    """
+    logging.debug('Saving recipe to "{}"'.format(path))
+
+    logging.info('Checking recipe file "{}"'.format(path))
+    if os.path.exists(path):
+        try:
+            logging.info('Removing old recipe file "{}"'.format(path))
+            os.remove(path)
+        except OSError:
+            logging.error('Failed to remove recipe file "{}"'.format(path))
+            return False
+
+    logging.info('Creating and writing recipe file "{}"'.format(path))
+
+    data = {
+        'name': recipe.name,
+        'ingredients': recipe.get_ingredients_obj(),
+        'steps': recipe.get_steps_obj(),
+        'links': recipe.get_links_obj()
+    }
+
+    try:
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(data, f)
+        return True
+    except Exception as e:
+        logging.error('Failed to create new recipe file "{}": {}'.format(path, e))
+        return False

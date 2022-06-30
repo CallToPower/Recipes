@@ -11,7 +11,7 @@ import logging
 from PyQt5.QtCore import Qt, QVariant, QModelIndex, QAbstractTableModel
 from PyQt5.QtGui import QColor
 
-from classes.Ingredient import Ingredient
+from classes.Link import Link
 from lib.Colors import COLOR_GRAY_LIGHT
 
 class LinksTableModel(QAbstractTableModel):
@@ -97,4 +97,9 @@ class LinksTableModel(QAbstractTableModel):
 
     def _datalist_to_links(self):
         """Converts a "plain" data list to a list of Link objects"""
-        return [{'name': d[0], 'url': d[1]} for d in self._data]
+        lst = []
+        for d in self._data:
+            lnk = Link()
+            lnk.init_from_attr(d[0], d[1])
+            lst.append(lnk)
+        return lst

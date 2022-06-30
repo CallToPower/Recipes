@@ -106,7 +106,7 @@ class Settings():
                 logging.info('Removing old settings file "{}"'.format(settings_file_name))
                 os.remove(settings_file_name)
             except OSError:
-                logging.error('Failed to remove settings file "{}"'-format(settings_file_name))
+                logging.error('Failed to remove settings file "{}"'.format(settings_file_name))
                 return False
 
         logging.info('Creating and writing settings file "{}"'.format(settings_file_name))
@@ -121,6 +121,7 @@ class Settings():
         try:
             with open(settings_file_name, 'w', encoding='utf-8') as f:
                 json.dump(data, f)
+            return True
         except Exception as e:
             logging.error('Failed to create new settings file "{}": {}'.format(settings_file_name, e))
             return False
