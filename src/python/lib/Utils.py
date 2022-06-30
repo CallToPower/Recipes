@@ -1,12 +1,31 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright 2022 Denis Meyer
+#
+# This file is part of Rezepte.
+#
+
+"""Utils"""
+
 import os
 import logging
 import json
+import platform
 from pathlib import Path
 
 from classes.Recipe import Recipe
 from classes.Exceptions import FileNotFoundError, JsonProcessingError
 
 from PyQt5.QtGui import QPixmap, QIcon
+
+def is_macos():
+    if platform.uname().system.startswith('Darw'):
+        logging.debug('Platform is Mac OS')
+        return True
+    else:
+        logging.debug('Platform is not Mac OS')
+        return False
 
 def load_pixmap(basedir, file, base_path=None):
     """

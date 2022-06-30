@@ -8,10 +8,11 @@
 
 import logging
 
-from PyQt5.QtCore import Qt, QVariant, QModelIndex
-from PyQt5.QtCore import QAbstractTableModel
+from PyQt5.QtCore import Qt, QVariant, QModelIndex, QAbstractTableModel
+from PyQt5.QtGui import QColor
 
 from classes.Ingredient import Ingredient
+from lib.Colors import COLOR_GRAY_LIGHT
 
 class LinksTableModel(QAbstractTableModel):
 
@@ -31,6 +32,9 @@ class LinksTableModel(QAbstractTableModel):
 
     # @override
     def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.BackgroundColorRole:
+            if index.row() % 2 != 0:
+                return QVariant(COLOR_GRAY_LIGHT)
         if role == Qt.EditRole:
             return self._data[index.row()][index.column()]
         if role == Qt.DisplayRole:

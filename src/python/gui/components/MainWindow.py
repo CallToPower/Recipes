@@ -9,11 +9,11 @@
 """Main window"""
 
 import logging
-import platform
 
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFileDialog
 
+from lib.Utils import is_macos
 from i18n.I18n import I18n
 from gui.enums.Language import Language
 from gui.components.TreeViewUI import TreeViewUI
@@ -109,12 +109,7 @@ class MainWindow(QMainWindow):
         """Initializes the menu bar"""
         logging.debug('Initializing the menu bar')
 
-        if platform.uname().system.startswith('Darw'):
-            logging.debug('Platform is Mac OS')
-            self.menu_bar = QMenuBar()
-        else:
-            logging.debug('Platform is not Mac OS')
-            self.menu_bar = self.menuBar()
+        self.menu_bar = QMenuBar() if is_macos() else self.menuBar()
 
         self.menu_bar.clear()
 

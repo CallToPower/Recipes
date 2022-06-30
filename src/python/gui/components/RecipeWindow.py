@@ -9,13 +9,13 @@
 """Recipe window"""
 
 import logging
-import platform
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFileDialog, QLabel, QWidget, QSizePolicy, QGridLayout, QTableView, QHeaderView
 
+from lib.Utils import is_macos
 from i18n.I18n import I18n
 from gui.components.IngredientsTableModel import IngredientsTableModel
 from gui.components.StepsTableModel import StepsTableModel
@@ -64,13 +64,8 @@ class RecipeWindow(QMainWindow):
     def _init_menu(self):
         """Initializes the menu bar"""
         logging.debug('Initializing the menu bar')
-        
-        if platform.uname().system.startswith('Darw'):
-            logging.debug('Platform is Mac OS')
-            self.menu_bar = QMenuBar()
-        else:
-            logging.debug('Platform is not Mac OS')
-            self.menu_bar = self.menuBar()
+
+        self.menu_bar = QMenuBar() if is_macos() else self.menuBar()
 
         self.menu_bar.clear()
 
@@ -98,7 +93,8 @@ class RecipeWindow(QMainWindow):
         self.font_label_info.setBold(False)
         self.font_label_info.setPointSize(app_conf_get('label.info.font.size', 16))
 
-        self.line_css = 'background-color: #c0c0c0;'
+        line_css = 'background-color: #c0c0c0;'
+        bgcolor_header_css = 'background-color: rgb(230, 230, 230);'
 
         # Components
 
@@ -109,7 +105,7 @@ class RecipeWindow(QMainWindow):
         self.label_ingredients_line_1 = QWidget()
         self.label_ingredients_line_1.setFixedHeight(1)
         self.label_ingredients_line_1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.label_ingredients_line_1.setStyleSheet(self.line_css)
+        self.label_ingredients_line_1.setStyleSheet(line_css)
 
         self.label_ingredients = QLabel(self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.INGREDIENTS'))
         self.label_ingredients.setFont(self.font_label_info)
@@ -118,10 +114,11 @@ class RecipeWindow(QMainWindow):
         self.label_ingredients_line_2 = QWidget()
         self.label_ingredients_line_2.setFixedHeight(1)
         self.label_ingredients_line_2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.label_ingredients_line_2.setStyleSheet(self.line_css)
+        self.label_ingredients_line_2.setStyleSheet(line_css)
 
         self.table_ingredients = QTableView()
-        headers_h_ingredients = [self.i18n.translate('GUI.RECIPE.HEADERS.QUANTITY'), self.i18n.translate('GUI.RECIPE.HEADERS.NAME'), self.i18n.translate('GUI.RECIPE.HEADERS.ADDITION')]
+        self.table_ingredients.setStyleSheet('QHeaderView::section { ' + bgcolor_header_css + ' }');
+        headers_h_ingredients = [self.i18n.translate('GUI.RECIPE.HEADERS.INGREDIENTS.QUANTITY'), self.i18n.translate('GUI.RECIPE.HEADERS.INGREDIENTS.NAME'), self.i18n.translate('GUI.RECIPE.HEADERS.INGREDIENTS.ADDITION')]
         self.model_ingredients = IngredientsTableModel(self.recipe.ingredients, headers_h=headers_h_ingredients, cb_change=self._on_ingredients_changed)
         self.table_ingredients.setModel(self.model_ingredients)
         self.table_ingredients.resizeRowsToContents()
@@ -139,7 +136,7 @@ class RecipeWindow(QMainWindow):
         self.label_steps_line_1 = QWidget()
         self.label_steps_line_1.setFixedHeight(1)
         self.label_steps_line_1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.label_steps_line_1.setStyleSheet(self.line_css)
+        self.label_steps_line_1.setStyleSheet(line_css)
 
         self.label_steps = QLabel(self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.STEPS'))
         self.label_steps.setFont(self.font_label_info)
@@ -148,9 +145,10 @@ class RecipeWindow(QMainWindow):
         self.label_steps_line_2 = QWidget()
         self.label_steps_line_2.setFixedHeight(1)
         self.label_steps_line_2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.label_steps_line_2.setStyleSheet(self.line_css)
+        self.label_steps_line_2.setStyleSheet(line_css)
 
         self.table_steps = QTableView()
+        self.table_steps.setStyleSheet('QHeaderView::section { ' + bgcolor_header_css + ' }');
         self.model_steps = StepsTableModel(self.recipe.steps, cb_change=self._on_steps_changed)
         self.table_steps.setModel(self.model_steps)
         self.table_steps.resizeRowsToContents()
@@ -168,7 +166,7 @@ class RecipeWindow(QMainWindow):
         self.label_links_line_1 = QWidget()
         self.label_links_line_1.setFixedHeight(1)
         self.label_links_line_1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.label_links_line_1.setStyleSheet(self.line_css)
+        self.label_links_line_1.setStyleSheet(line_css)
 
         self.label_links = QLabel(self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.LINKS'))
         self.label_links.setFont(self.font_label_info)
@@ -177,10 +175,12 @@ class RecipeWindow(QMainWindow):
         self.label_links_line_2 = QWidget()
         self.label_links_line_2.setFixedHeight(1)
         self.label_links_line_2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.label_links_line_2.setStyleSheet(self.line_css)
+        self.label_links_line_2.setStyleSheet(line_css)
         
         self.table_links = QTableView()
-        self.model_links = LinksTableModel(self.recipe.links, cb_change=self._on_links_changed)
+        self.table_links.setStyleSheet('QHeaderView::section { ' + bgcolor_header_css + ' }');
+        headers_h_links = [self.i18n.translate('GUI.RECIPE.HEADERS.LINKS.NAME'), self.i18n.translate('GUI.RECIPE.HEADERS.LINKS.URL')]
+        self.model_links = LinksTableModel(self.recipe.links, headers_h=headers_h_links, cb_change=self._on_links_changed)
         self.table_links.setModel(self.model_links)
         self.table_links.resizeRowsToContents()
         self.table_links.resizeColumnsToContents()
@@ -206,9 +206,9 @@ class RecipeWindow(QMainWindow):
 
         curr_gridid += 1
         self.grid.setRowStretch(curr_gridid, 0)
-        self.grid.addWidget(self.label_ingredients_line_1, curr_gridid, 0, 1, 4)
-        self.grid.addWidget(self.label_ingredients, curr_gridid, 4, 1, 2)
-        self.grid.addWidget(self.label_ingredients_line_2, curr_gridid, 6, 1, 4)
+        self.grid.addWidget(self.label_ingredients_line_1, curr_gridid, 0, 1, 3)
+        self.grid.addWidget(self.label_ingredients, curr_gridid, 3, 1, 4)
+        self.grid.addWidget(self.label_ingredients_line_2, curr_gridid, 7, 1, 3)
 
         curr_gridid += 1
         self.grid.setRowStretch(curr_gridid, 1)
@@ -216,9 +216,9 @@ class RecipeWindow(QMainWindow):
 
         curr_gridid += 5
         self.grid.setRowStretch(curr_gridid, 0)
-        self.grid.addWidget(self.label_steps_line_1, curr_gridid, 0, 1, 4)
-        self.grid.addWidget(self.label_steps, curr_gridid, 4, 1, 2)
-        self.grid.addWidget(self.label_steps_line_2, curr_gridid, 6, 1, 4)
+        self.grid.addWidget(self.label_steps_line_1, curr_gridid, 0, 1, 3)
+        self.grid.addWidget(self.label_steps, curr_gridid, 3, 1, 4)
+        self.grid.addWidget(self.label_steps_line_2, curr_gridid, 7, 1, 3)
 
         curr_gridid += 1
         self.grid.setRowStretch(curr_gridid, 1)
@@ -226,9 +226,9 @@ class RecipeWindow(QMainWindow):
 
         curr_gridid += 5
         self.grid.setRowStretch(curr_gridid, 0)
-        self.grid.addWidget(self.label_links_line_1, curr_gridid, 0, 1, 4)
-        self.grid.addWidget(self.label_links, curr_gridid, 4, 1, 2)
-        self.grid.addWidget(self.label_links_line_2, curr_gridid, 6, 1, 4)
+        self.grid.addWidget(self.label_links_line_1, curr_gridid, 0, 1, 3)
+        self.grid.addWidget(self.label_links, curr_gridid, 3, 1, 4)
+        self.grid.addWidget(self.label_links_line_2, curr_gridid, 7, 1, 3)
 
         curr_gridid += 1
         self.grid.setRowStretch(curr_gridid, 0)
