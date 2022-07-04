@@ -16,17 +16,18 @@ from lib.Colors import COLOR_GRAY_LIGHT
 
 class StepsTableModel(QAbstractTableModel):
 
-    def __init__(self, steps=[], headers_v=None, cb_change=None):
+    def __init__(self, i18n, steps=[], cb_change=None):
         """Initializes the model
+
+        :param i18n: The i18n
         :param steps: The steps list
-        :param headers_v: The vertical headers list
         :param cb_change: The callback on data changed
         """
         super(StepsTableModel, self).__init__()
 
+        self.i18n = i18n
         self._data = self._copy_steps(steps)
         self._headers_h = []
-        self._headers_v = headers_v if headers_v else [i for i in range(0, len(self._data))]
         self._cb_change = cb_change
 
     # @override
@@ -48,7 +49,7 @@ class StepsTableModel(QAbstractTableModel):
             return False
         try:
             value_old = self._data[index.row()]
-            if value_old.strip() == value.strip():
+            if value_old and value and value_old.strip() == value.strip():
                 logging.debug('Data did not change: [row={}, column={}, value={}]'.format(index.row(), index.column(), value))
                 return False
 
@@ -72,15 +73,33 @@ class StepsTableModel(QAbstractTableModel):
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
             if orientation == Qt.Vertical:
-                return self._headers_v[section]
+                return section + 1
 
     # @override
     def rowCount(self, index=QModelIndex()):
+        if not self._data:
+            return 0
         return len(self._data)
 
     # @override
     def columnCount(self, index=QModelIndex()):
         return 1
+
+    def remove_row(self, row):
+        """Removes the selected row
+        :param row: Row
+        """
+        logging.debug('Remove row #{}'.format(row))
+        self._data.pop(row)
+        self.layoutChanged.emit()
+        if self._cb_change:
+            self._cb_change(self._data)
+
+    def add_row(self):
+        """Adds a row"""
+        logging.debug('Add row')
+        self._data.append('')
+        self.layoutChanged.emit()
 
     # @override
     def flags(self, index):

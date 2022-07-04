@@ -55,5 +55,5 @@ def app_conf_get(key, default=''):
     try:
         return _app_config[key]
     except KeyError as exception:
-        logging.error('Returning default for key "{}": "{}"'.format(key, exception))
+        logging.warn('Returning default for key "{}": "{}"'.format(key, exception))
         return default

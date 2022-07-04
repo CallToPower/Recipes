@@ -16,18 +16,19 @@ from lib.Colors import COLOR_GRAY_LIGHT
 
 class LinksTableModel(QAbstractTableModel):
 
-    def __init__(self, links=[], headers_h=['Name', 'URL'], headers_v=None, cb_change=None):
+    def __init__(self, i18n, links=[], cb_change=None):
         """Initializes the model
+
+        :param i18n: The i18n
         :param links: The links list
         :param headers_h: The horizontal headers list
-        :param headers_v: The vertical headers list
         :param cb_change: The callback on data changed
         """
         super(LinksTableModel, self).__init__()
 
+        self.i18n = i18n
         self._data = self._links_to_datalist(links)
-        self._headers_h = headers_h
-        self._headers_v = headers_v if headers_v else [i for i in range(0, len(self._data))]
+        self._headers_h = [self.i18n.translate('GUI.RECIPE.HEADERS.LINKS.NAME'), self.i18n.translate('GUI.RECIPE.HEADERS.LINKS.URL')]
         self._cb_change = cb_change
 
     # @override
@@ -49,7 +50,7 @@ class LinksTableModel(QAbstractTableModel):
             return False
         try:
             value_old = self._data[index.row()][index.column()]
-            if value_old.strip() == value.strip():
+            if value_old and value and value_old.strip() == value.strip():
                 logging.debug('Data did not change: [row={}, column={}, value={}]'.format(index.row(), index.column(), value))
                 return False
 
@@ -75,19 +76,39 @@ class LinksTableModel(QAbstractTableModel):
             if orientation == Qt.Horizontal:
                 return self._headers_h[section]
             if orientation == Qt.Vertical:
-                return self._headers_v[section]
+                return section + 1
 
     # @override
     def rowCount(self, index=QModelIndex()):
+        if not self._data:
+            return 0
         return len(self._data)
 
     # @override
     def columnCount(self, index=QModelIndex()):
+        if not self._data:
+            return 0
         return len(self._data[0])
 
     # @override
     def flags(self, index):
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
+
+    def remove_row(self, row):
+        """Removes the selected row
+        :param row: Row
+        """
+        logging.debug('Remove row #{}'.format(row))
+        self._data.pop(row)
+        self.layoutChanged.emit()
+        if self._cb_change:
+            self._cb_change(self._datalist_to_links())
+
+    def add_row(self):
+        """Adds a row"""
+        logging.debug('Add row')
+        self._data.append(['', None])
+        self.layoutChanged.emit()
 
     def _links_to_datalist(self, links):
         """Converts a list of Link objects to a "plain" data list

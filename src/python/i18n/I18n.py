@@ -139,5 +139,5 @@ class I18n():
         try:
             return self._translations[key]
         except KeyError as exception:
-            logging.error('Returning default for key "{}": "{}"'.format(key, exception))
+            logging.warn('Returning default for key "{}": "{}"'.format(key, exception))
             return default
