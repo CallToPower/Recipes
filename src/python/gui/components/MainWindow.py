@@ -186,9 +186,6 @@ class MainWindow(QMainWindow):
         self._init_menu()
         self._init_widgets()
 
-    def _prepare_widgets(self):
-        """Prepares the widgets"""
-
     def _reset_phases(self):
         """Resets phases"""
         logging.info('Resetting phases')

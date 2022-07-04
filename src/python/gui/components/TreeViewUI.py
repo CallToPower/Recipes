@@ -14,7 +14,7 @@ import shutil
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
-from PyQt5.QtWidgets import QSizePolicy, QWidget, QGridLayout, QLabel, QTreeWidget, QTreeWidgetItem, QProgressBar, QPushButton, QMessageBox, QInputDialog, QLineEdit
+from PyQt5.QtWidgets import QSizePolicy, QWidget, QGridLayout, QLabel, QTreeWidget, QTreeWidgetItem, QProgressBar, QPushButton, QMessageBox, QInputDialog, QLineEdit, QFileDialog, QDialog
 
 from lib.Utils import load_json_recipe
 from lib.AppConfig import app_conf_get
@@ -202,7 +202,54 @@ class TreeViewUI(QWidget):
 
     def _move(self):
         """Moves the selected file"""
-        pass
+        curr_item = self.treewidget_dir.currentItem()
+        if curr_item:
+            data = curr_item.data(0, Qt.UserRole)
+            path_info = data['path_info']
+            folder = data['folder']
+            moved = False
+            if os.path.isdir(path_info):
+                dirname = path_info
+                logging.info('Move folder "{}"'.format(dirname))
+                selected_folder, is_selected = self._select_folder(dirname)
+                if is_selected and dirname != selected_folder:
+                    logging.info('Moving folder "{}"'.format(selected_folder))
+                    try:
+                        shutil.move(dirname, selected_folder)
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_DIRECTORY').format(dirname, selected_folder))
+                        moved = True
+                    except Exception as e:
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_DIRECTORY.FAIL').format(dirname, selected_folder))
+                        logging.error('Failed to move directory "{}" to "{}": {}'.format(dirname, selected_folder, e))
+            elif os.path.isfile(path_info):
+                dirname = os.path.dirname(path_info)
+                logging.info('Move file "{}"'.format(path_info))
+                selected_folder, is_selected = self._select_folder(dirname)
+                if is_selected and dirname != selected_folder:
+                    logging.info('Moving file "{}"'.format(selected_folder))
+                    try:
+                        shutil.move(path_info, selected_folder)
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_FILE').format(dirname, selected_folder))
+                        moved = True
+                    except Exception as e:
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_FILE.FAIL').format(dirname, selected_folder))
+                        logging.error('Failed to move file "{}" to "{}": {}'.format(dirname, selected_folder, e))
+            if moved:
+                logging.debug('Refreshing view')
+                self._refresh_view(do_log=False)
+                self._enable()
+
+    def _select_folder(self, directory):
+        """Select folder dialog
+        :param directory: The directory
+        """
+        filter = None
+        dialog = QFileDialog(self, 'Select folder', directory, filter)
+        dialog.setFileMode(QFileDialog.DirectoryOnly)
+        if dialog.exec_() == QDialog.Accepted:
+            return dialog.selectedFiles()[0], True
+        else:
+            return '', False
 
     def _create_folder(self):
         """Creates a new folder"""

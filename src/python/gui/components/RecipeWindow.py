@@ -56,9 +56,13 @@ class RecipeWindow(QMainWindow):
 
         self._init_menu()
 
-        self.setWindowTitle(self.recipe.name)
+        if self.recipe.name:
+            self.setWindowTitle(self.recipe.name)
+        else:
+            self.setWindowTitle(self.i18n.translate('GUI.RECIPE.VIEW.EMPTY_WINDOW_TITLE'))
         self.statusbar = self.statusBar()
-        self.show_message(self.i18n.translate('GUI.MAIN.LOG.RECIPE').format(self.recipe.name))
+        if self.recipe.name:
+            self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE').format(self.recipe.name))
 
         self._init_widgets()
 
@@ -250,6 +254,7 @@ class RecipeWindow(QMainWindow):
             if name != self.recipe.name:
                 self.recipe.name = name
                 self.label_header.setText(self.recipe.name)
+                self.setWindowTitle(self.recipe.name)
                 self._changed = True
             else:
                 logging.debug('Name did not change')

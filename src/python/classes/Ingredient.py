@@ -6,8 +6,6 @@
 # This file is part of Rezepte.
 #
 
-from classes.Exceptions import ArgumentsException
-
 """Ingredient"""
 
 class Ingredient():
@@ -24,10 +22,8 @@ class Ingredient():
         
         :param obj: Object containing information
         """
-        if not 'name' in obj:
-            raise ArgumentsException('Could not extract arguments from {}'.format(args))
         self.quantity = obj['quantity'] if 'quantity' in obj else None
-        self.name = obj['name']
+        self.name = obj['name'] if 'name' in obj else ''
         self.addition = obj['addition'] if 'addition' in obj else ''
 
     def init_from_attr(self, quantity, name, addition):
@@ -37,8 +33,6 @@ class Ingredient():
         :param name: Name
         :param addition: Addition
         """
-        if not name:
-            raise ArgumentsException('Could not extract name from {}'.format(name))
         self.quantity = quantity
         self.name = name
         self.addition = addition

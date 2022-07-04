@@ -6,8 +6,6 @@
 # This file is part of Rezepte.
 #
 
-from classes.Exceptions import ArgumentsException
-
 """Link"""
 
 class Link():
@@ -23,9 +21,7 @@ class Link():
         
         :param obj: Object containing information
         """
-        if not 'name' in obj:
-            raise ArgumentsException('Could not extract arguments from {}'.format(args))
-        self.name = obj['name']
+        self.name = obj['name'] if 'name' in obj else ''
         self.url = obj['url'] if 'url' in obj else ''
 
     def init_from_attr(self, name, url):
@@ -34,8 +30,6 @@ class Link():
         :param name: Name
         :param url: URL
         """
-        if not name:
-            raise ArgumentsException('Could not extract name from {}'.format(name))
         self.name = name
         self.url = url
 

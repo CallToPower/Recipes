@@ -6,8 +6,6 @@
 # This file is part of Rezepte.
 #
 
-from classes.Exceptions import ArgumentsException
-
 from classes.Ingredient import Ingredient
 from classes.Link import Link
 
