@@ -13,7 +13,7 @@ import logging
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QInputDialog, QLineEdit, QLabel, QWidget, QSizePolicy, QGridLayout, QTableView, QHeaderView, QPushButton, QAbstractItemView
+from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QInputDialog, QLineEdit, QLabel, QWidget, QSizePolicy, QGridLayout, QTableView, QHeaderView, QPushButton, QAbstractItemView, QMessageBox
 
 from lib.Utils import is_macos
 from i18n.I18n import I18n
@@ -271,22 +271,41 @@ class RecipeWindow(QMainWindow):
                 header_h.setSectionResizeMode(i, QHeaderView.ResizeToContents)
             header_h.setSectionResizeMode(max(0, len(model._headers_h) - 1), QHeaderView.Stretch)
 
+    def _close_yesno(self):
+        """Displays a message box with yes/no
+        :return: True if yes, False else
+        """
+        msg = self.i18n.translate('GUI.RECIPE.MESSAGE_BOX.CLOSE.TEXT')
+        title = self.i18n.translate('GUI.RECIPE.MESSAGE_BOX.CLOSE')
+        message_box = QMessageBox(QMessageBox.Information, title, msg, buttons=QMessageBox.Yes | QMessageBox.No)
+        message_box.exec_()
+
+        return message_box.standardButton(message_box.clickedButton()) == QMessageBox.Yes
+
     def _cancel(self):
         """Cancels the change"""
         logging.debug('Cancel')
         if not self._changed:
+            logging.info('Nothing changed, closing')
             self._close()
+        else:
+            logging.info('Something changed, asking whether to close')
+            if self._close_yesno():
+                logging.info('Closing without saving')
+                self._close()
+            else:
+                logging.info('Not closing without saving')
 
     def _save(self):
         """Saves the change"""
         logging.debug('Save')
         if not self._changed:
             logging.info('Nothing changed')
+            self._close()
             return
         logging.info('Saving recipe to "{}"'.format(self.path_info))
         if save_recipe(self.recipe, self.path_info):
             self._close()
-        # TODO: Dialog whether to close with changes
 
     def _remove_ingredient(self):
         """Removes the currently selected ingredient"""
