@@ -106,9 +106,9 @@ class TreeViewUI(QWidget):
         self.treewidget_dir.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treewidget_dir.customContextMenuRequested.connect(self._open_menu)
         # self.treewidget_dir.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.treewidget_dir.setDragEnabled(True)
-        self.treewidget_dir.setAcceptDrops(True)
-        self.treewidget_dir.setDropIndicatorShown(True)
+        #self.treewidget_dir.setDragEnabled(True)
+        #self.treewidget_dir.setAcceptDrops(True)
+        #self.treewidget_dir.setDropIndicatorShown(True)
 
         #curr_folder = self._get_formatted_current_folder(show_slash=False)
         #self.treewidget_dir.setHeaderLabel(curr_folder)

@@ -66,12 +66,6 @@ class IngredientsTableModel(QAbstractTableModel):
         return True
 
     # @override
-    #def insertRows():
-
-    # @override
-    #def removeRows():
-
-    # @override
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:

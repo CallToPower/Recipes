@@ -21,7 +21,6 @@ class LinksTableModel(QAbstractTableModel):
 
         :param i18n: The i18n
         :param links: The links list
-        :param headers_h: The horizontal headers list
         :param cb_change: The callback on data changed
         """
         super(LinksTableModel, self).__init__()
@@ -64,12 +63,6 @@ class LinksTableModel(QAbstractTableModel):
             return False
 
         return True
-
-    # @override
-    #def insertRows():
-
-    # @override
-    #def removeRows():
 
     # @override
     def headerData(self, section, orientation, role=Qt.DisplayRole):
