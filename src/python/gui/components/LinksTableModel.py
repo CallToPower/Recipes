@@ -29,6 +29,7 @@ class LinksTableModel(QAbstractTableModel):
         self.i18n = i18n
         self._data = self._links_to_datalist(links)
         self._headers_h = [self.i18n.translate('GUI.RECIPE.HEADERS.LINKS.NAME'), self.i18n.translate('GUI.RECIPE.HEADERS.LINKS.URL')]
+        self.headers_v = []
         self._cb_change = cb_change
 
     # @override

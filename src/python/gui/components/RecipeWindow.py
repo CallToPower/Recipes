@@ -134,11 +134,7 @@ class RecipeWindow(QMainWindow):
         self.table_ingredients.resizeRowsToContents()
         self.table_ingredients.resizeColumnsToContents()
         self.table_ingredients.setWordWrap(True)
-        header_h_ingredients = self.table_ingredients.horizontalHeader()
-        for i in range(0, max(0, len(self.model_ingredients._headers_h) - 2)):
-            header_h_ingredients.setSectionResizeMode(i, QHeaderView.ResizeToContents)
-        header_h_ingredients.setSectionResizeMode(max(0, len(self.model_ingredients._headers_h) - 1), QHeaderView.Stretch)
-        self._update_headers(self.table_ingredients, len(self.recipe.ingredients))
+        self._update_headers(self.table_ingredients, self.model_ingredients, len(self.recipe.ingredients))
         self.table_ingredients.verticalHeader().setVisible(False)
 
         label_steps_line = QWidget()
@@ -163,12 +159,8 @@ class RecipeWindow(QMainWindow):
         self.table_steps.resizeRowsToContents()
         self.table_steps.resizeColumnsToContents()
         self.table_steps.setWordWrap(True)
-        header_h_steps = self.table_steps.horizontalHeader()
-        for i in range(0, max(0, len(self.model_steps._headers_h) - 2)):
-            header_h_steps.setSectionResizeMode(i, QHeaderView.ResizeToContents)
-        header_h_steps.setSectionResizeMode(max(0, len(self.model_steps._headers_h) - 1), QHeaderView.Stretch)
-        header_h_steps.setVisible(False)
-        self._update_headers(self.table_steps, len(self.recipe.steps))
+        self._update_headers(self.table_steps, self.model_steps, len(self.recipe.steps))
+        self.table_steps.horizontalHeader().setVisible(False)
 
         label_links_line = QWidget()
         label_links_line.setFixedHeight(1)
@@ -192,11 +184,7 @@ class RecipeWindow(QMainWindow):
         self.table_links.resizeRowsToContents()
         self.table_links.resizeColumnsToContents()
         self.table_links.setWordWrap(True)
-        header_h_links = self.table_links.horizontalHeader()
-        for i in range(0, max(0, len(self.model_links._headers_h) - 2)):
-            header_h_links.setSectionResizeMode(i, QHeaderView.ResizeToContents)
-        header_h_links.setSectionResizeMode(max(0, len(self.model_links._headers_h) - 1), QHeaderView.Stretch)
-        self._update_headers(self.table_links, len(self.recipe.links))
+        self._update_headers(self.table_links, self.model_links, len(self.recipe.links))
 
         button_cancel = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.CANCEL'))
         button_cancel.clicked[bool].connect(self._cancel)
@@ -266,14 +254,21 @@ class RecipeWindow(QMainWindow):
             else:
                 logging.debug('Name did not change')
 
-    def _update_headers(self, table, len_v):
+    def _update_headers(self, table, model, len_v):
         """Updates the headers
         :param table: The table
         :param len_v: Vertical header length
         """
         header_v = table.verticalHeader()
-        for i in range(0, len_v):
-            header_v.setSectionResizeMode(i, QHeaderView.ResizeToContents)
+        if header_v:
+            for i in range(0, len_v):
+                header_v.setSectionResizeMode(i, QHeaderView.ResizeToContents)
+
+        header_h = table.horizontalHeader()
+        if header_h:
+            for i in range(0, max(0, len(model._headers_h))):
+                header_h.setSectionResizeMode(i, QHeaderView.ResizeToContents)
+            header_h.setSectionResizeMode(max(0, len(model._headers_h) - 1), QHeaderView.Stretch)
 
     def _cancel(self):
         """Cancels the change"""
@@ -306,7 +301,7 @@ class RecipeWindow(QMainWindow):
         """Adds a new ingredient"""
         logging.debug('Add ingredient')
         self.model_ingredients.add_row()
-        self._update_headers(self.table_ingredients, len(self.recipe.ingredients))
+        self._update_headers(self.table_ingredients, self.model_ingredients, len(self.recipe.ingredients))
         self._changed = True
 
     def _remove_step(self):
@@ -323,7 +318,7 @@ class RecipeWindow(QMainWindow):
         """Adds a new step"""
         logging.debug('Add step')
         self.model_steps.add_row()
-        self._update_headers(self.table_steps, len(self.recipe.steps))
+        self._update_headers(self.table_steps, self.model_steps, len(self.recipe.steps))
         self._changed = True
 
     def _remove_link(self):
@@ -340,7 +335,7 @@ class RecipeWindow(QMainWindow):
         """Adds a new link"""
         logging.debug('Add link')
         self.model_links.add_row()
-        self._update_headers(self.table_links, len(self.recipe.links))
+        self._update_headers(self.table_links, self.model_links, len(self.recipe.links))
         self._changed = True
 
     def _on_ingredients_changed(self, lst):

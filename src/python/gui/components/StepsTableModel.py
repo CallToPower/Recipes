@@ -28,6 +28,7 @@ class StepsTableModel(QAbstractTableModel):
         self.i18n = i18n
         self._data = self._copy_steps(steps)
         self._headers_h = []
+        self._headers_v = []
         self._cb_change = cb_change
 
     # @override

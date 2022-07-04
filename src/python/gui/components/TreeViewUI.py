@@ -10,16 +10,19 @@
 
 import logging
 import os
+import shutil
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
-from PyQt5.QtWidgets import QSizePolicy, QWidget, QGridLayout, QLabel, QTreeWidget, QTreeWidgetItem, QProgressBar, QPushButton
+from PyQt5.QtWidgets import QSizePolicy, QWidget, QGridLayout, QLabel, QTreeWidget, QTreeWidgetItem, QProgressBar, QPushButton, QMessageBox, QInputDialog, QLineEdit
 
 from lib.Utils import load_json_recipe
 from lib.AppConfig import app_conf_get
 
+from classes.Recipe import Recipe
 from gui.enums.Language import Language
 from gui.components.RecipeWindow import RecipeWindow
+from lib.Utils import save_recipe
 
 
 class TreeViewUI(QWidget):
@@ -78,9 +81,25 @@ class TreeViewUI(QWidget):
         self.line_2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.line_2.setStyleSheet(self.line_css)
 
-        self.button_edit_title = QPushButton()
-        icon = self.image_cache.get_or_load_icon('img.icon.edit', 'pen-to-square-solid.svg', 'icons')
-        self.button_edit_title.setIcon(icon)
+        self.button_delete = QPushButton()
+        icon = self.image_cache.get_or_load_icon('img.icon.delete', 'minus-solid.svg', 'icons')
+        self.button_delete.setIcon(icon)
+        self.button_delete.clicked[bool].connect(self._delete)
+
+        self.button_move = QPushButton()
+        icon = self.image_cache.get_or_load_icon('img.icon.move', 'arrow-right-arrow-left-solid.svg', 'icons')
+        self.button_move.setIcon(icon)
+        self.button_move.clicked[bool].connect(self._move)
+
+        self.button_create_folder = QPushButton()
+        icon = self.image_cache.get_or_load_icon('img.icon.create_folder', 'folder-plus-solid.svg', 'icons')
+        self.button_create_folder.setIcon(icon)
+        self.button_create_folder.clicked[bool].connect(self._create_folder)
+
+        self.button_create_recipe = QPushButton()
+        icon = self.image_cache.get_or_load_icon('img.icon.create_recipe', 'plus-solid.svg', 'icons')
+        self.button_create_recipe.setIcon(icon)
+        self.button_create_recipe.clicked[bool].connect(self._create_recipe)
 
         self.treewidget_dir = QTreeWidget()
         self.treewidget_dir.setHeaderHidden(True)
@@ -104,10 +123,13 @@ class TreeViewUI(QWidget):
         # self.grid.addWidget(widget, row, column, rowspan, columnspan)
 
         curr_gridid = 0
-        self.grid.addWidget(self.line_1, curr_gridid, 0, 1, 4)
-        self.grid.addWidget(self.label_header, curr_gridid, 4, 1, 2)
-        self.grid.addWidget(self.line_2, curr_gridid, 6, 1, 3)
-        self.grid.addWidget(self.button_edit_title, curr_gridid, 9, 1, 1)
+        self.grid.addWidget(self.line_1, curr_gridid, 0, 1, 3)
+        self.grid.addWidget(self.label_header, curr_gridid, 3, 1, 2)
+        self.grid.addWidget(self.line_2, curr_gridid, 5, 1, 1)
+        self.grid.addWidget(self.button_delete, curr_gridid, 6, 1, 1)
+        self.grid.addWidget(self.button_move, curr_gridid, 7, 1, 1)
+        self.grid.addWidget(self.button_create_folder, curr_gridid, 8, 1, 1)
+        self.grid.addWidget(self.button_create_recipe, curr_gridid, 9, 1, 1)
 
         curr_gridid += 1
         self.grid.addWidget(self.treewidget_dir, curr_gridid, 0, 12, 10)
@@ -120,7 +142,122 @@ class TreeViewUI(QWidget):
 
         self.setLayout(self.grid)
         self._refresh_view()
-        self._reset_enabled()
+        self._enable()
+
+    def _messagebox_delete_yesno(self, is_file, name):
+        """Displays a message box with yes/no
+        :param is_file: Flag whether is a file or a folder
+        :param name: The file/folder name
+        :return: True if yes, False else
+        """
+        msg = self.i18n.translate('GUI.TREEVIEW.MESSAGE_BOX.DELETE.{}'.format('FILE' if is_file else 'DIRECTORY')).format(name)
+        title = self.i18n.translate('GUI.TREEVIEW.MESSAGE_BOX.DELETE')
+        message_box = QMessageBox(QMessageBox.Information, title, msg, buttons=QMessageBox.Yes | QMessageBox.No)
+        message_box.exec_()
+
+        return message_box.standardButton(message_box.clickedButton()) == QMessageBox.Yes
+
+    def _get_new_file_name(self, is_file=False):
+        """Asks for a new folder name
+        :param is_file: Flag whether is a file or a folder
+        """
+        name, ok = QInputDialog().getText(self, self.i18n.translate('GUI.TREEVIEW.ACTIONS.{}'.format('NEW_FILE' if is_file else 'NEW_FOLDER')), self.i18n.translate('GUI.TREEVIEW.ACTIONS.{}.TEXT'.format('NEW_FILE' if is_file else 'NEW_FOLDER')), QLineEdit.Normal, '')
+        return name, ok
+
+    def _delete(self):
+        """Deletes the selected folder/file"""
+        curr_item = self.treewidget_dir.currentItem()
+        if curr_item:
+            data = curr_item.data(0, Qt.UserRole)
+            path_info = data['path_info']
+            folder = data['folder']
+            deleted = False
+            if os.path.isdir(path_info):
+                logging.info('Delete folder "{}"'.format(path_info))
+                if self._messagebox_delete_yesno(False, folder):
+                    try:
+                        shutil.rmtree(path_info)
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_DIRECTORY').format(folder))
+                        deleted = True
+                    except Exception as e:
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_DIRECTORY.FAIL').format(folder))
+                        logging.error('Failed to remove directory "{}": {}'.format(path_info, e))
+            elif os.path.isfile(path_info) and path_info.endswith(self.recipe_suffix):
+                logging.info('Delete file "{}"'.format(path_info))
+                filename = data['filename'][:-len(self.recipe_suffix)]
+                if self._messagebox_delete_yesno(True, filename):
+                    try:
+                        os.remove(path_info)
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_FILE').format(filename))
+                        deleted = True
+                    except Exception as e:
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_FILE.FAIL').format(filename))
+                        logging.error('Failed to remove directory "{}": {}'.format(path_info, e))
+            if deleted:
+                logging.debug('Refreshing view')
+                self._refresh_view(do_log=False)
+                self._enable()
+        else:
+            logging.debug('No item selected')
+
+    def _move(self):
+        """Moves the selected file"""
+        pass
+
+    def _create_folder(self):
+        """Creates a new folder"""
+        curr_item = self.treewidget_dir.currentItem()
+        if curr_item:
+            data = curr_item.data(0, Qt.UserRole)
+            path_info = data['path_info']
+        else:
+            path_info = self.current_folder
+        dirname = path_info
+        if os.path.isfile(path_info):
+            dirname = os.path.dirname(path_info)
+        foldername, ok = self._get_new_file_name(is_file=False)
+        if ok:
+            folder = os.path.join(dirname, foldername)
+            if not os.path.exists(folder):
+                logging.info('Creating folder "{}"'.format(folder))
+                os.makedirs(folder)
+                self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FOLDER.SUCCESS').format(folder))
+                logging.debug('Refreshing view')
+                self._refresh_view(do_log=False)
+                self._enable()
+            else:
+                self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FOLDER.FAIL.EXISTS').format(folder))
+                logging.error('Folder "{}" already exists'.format(folder))
+
+    def _create_recipe(self):
+        """Creates a new recipe"""
+        curr_item = self.treewidget_dir.currentItem()
+        if curr_item:
+            data = curr_item.data(0, Qt.UserRole)
+            path_info = data['path_info']
+        else:
+            path_info = self.current_folder
+        dirname = path_info
+        if os.path.isfile(path_info):
+            dirname = os.path.dirname(path_info)
+        filename, ok = self._get_new_file_name(is_file=True)
+        if ok:
+            file = os.path.join(dirname, filename)
+            if not file.endswith(self.recipe_suffix):
+                file = file + self.recipe_suffix
+            if not os.path.exists(file):
+                logging.info('Creating file "{}"'.format(file))
+                recipe = Recipe()
+                if save_recipe(recipe, file):
+                    self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FILE.SUCCESS').format(file))
+                    logging.debug('Refreshing view')
+                    self._refresh_view(do_log=False)
+                    self._enable()
+                else:
+                    logging.error('Could not create file "{}"'.format(file))
+            else:
+                self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FOLDER.FAIL.EXISTS').format(folder))
+                logging.error('Folder "{}" already exists'.format(folder))
 
     def _on_item_double_clicked(self, item, col):
         """When an item in the tree widget has been double-clicked
@@ -157,9 +294,10 @@ class TreeViewUI(QWidget):
         logging.debug('Recipe window "{}" closed'.format(id))
         del self.recipe_windows[id]
 
-    def _refresh_view(self):
+    def _refresh_view(self, do_log=True):
         """Refreshes the view"""
-        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.LOAD_COOKBOOK.START'))
+        if do_log:
+            self.log(self.i18n.translate('GUI.TREEVIEW.LOG.LOAD_COOKBOOK.START'))
         logging.info('Loading cookbook')
         self._disable()
         self.progressbar.setValue(0)
@@ -172,7 +310,8 @@ class TreeViewUI(QWidget):
         self.progressbar.setValue(100)
         self.progressbar.reset()
         self._enable()
-        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.LOAD_COOKBOOK.DONE'))
+        if do_log:
+            self.log(self.i18n.translate('GUI.TREEVIEW.LOG.LOAD_COOKBOOK.DONE'))
         logging.info('Loaded cookbook')
 
     def _load_project_structure(self, startpath, tree):
@@ -212,12 +351,6 @@ class TreeViewUI(QWidget):
         logging.debug('Resetting widget')
 
         self.progressbar.reset()
-        self._reset_enabled()
-
-    def _reset_enabled(self):
-        """Resets all component to initial state"""
-        logging.debug('Resetting components to enabled state')
-
         self._enable()
 
     def _disable(self):

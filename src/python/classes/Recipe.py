@@ -18,9 +18,7 @@ class Recipe():
 
     def __init__(self, **args):
         """Initializes the recipe"""
-        if not args or not 'name' in args or not 'ingredients' in args or args['ingredients'] == None:
-            raise ArgumentsException('Could not extract arguments from {}'.format(args))
-        self.name = args['name']
+        self.name = args['name'] if 'name' in args else ''
 
         self.ingredients = []
         if 'ingredients' in args:
