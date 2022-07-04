@@ -257,6 +257,7 @@ class RecipeWindow(QMainWindow):
     def _update_headers(self, table, model, len_v):
         """Updates the headers
         :param table: The table
+        :param model: The model
         :param len_v: Vertical header length
         """
         header_v = table.verticalHeader()
