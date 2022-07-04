@@ -244,10 +244,10 @@ class TreeViewUI(QWidget):
                 if self._messagebox_delete_yesno(False, filename):
                     try:
                         shutil.rmtree(path_info)
-                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_DIRECTORY').format(folder))
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_DIRECTORY').format(filename))
                         deleted = True
                     except Exception as e:
-                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_DIRECTORY.FAIL').format(folder))
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_DIRECTORY.FAIL').format(filename))
                         logging.error('Failed to remove directory "{}": {}'.format(path_info, e))
             elif os.path.isfile(path_info) and path_info.endswith(self.recipe_suffix):
                 logging.info('Delete file "{}"'.format(path_info))
@@ -328,10 +328,10 @@ class TreeViewUI(QWidget):
                     logging.info('Moving folder "{}"'.format(selected_folder))
                     try:
                         shutil.move(dirname, selected_folder)
-                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_DIRECTORY').format(dirname, selected_folder))
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_DIRECTORY').format(os.path.basename(dirname), os.path.basename(selected_folder)))
                         moved = True
                     except Exception as e:
-                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_DIRECTORY.FAIL').format(dirname, selected_folder))
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_DIRECTORY.FAIL').format(os.path.basename(dirname), os.path.basename(selected_folder)))
                         logging.error('Failed to move directory "{}" to "{}": {}'.format(dirname, selected_folder, e))
             elif os.path.isfile(path_info):
                 dirname = os.path.dirname(path_info)
@@ -341,10 +341,10 @@ class TreeViewUI(QWidget):
                     logging.info('Moving file "{}"'.format(selected_folder))
                     try:
                         shutil.move(path_info, selected_folder)
-                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_FILE').format(dirname, selected_folder))
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_FILE').format(os.path.basename(dirname), os.path.basename(selected_folder)))
                         moved = True
                     except Exception as e:
-                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_FILE.FAIL').format(dirname, selected_folder))
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_FILE.FAIL').format(os.path.basename(dirname), os.path.basename(selected_folder)))
                         logging.error('Failed to move file "{}" to "{}": {}'.format(dirname, selected_folder, e))
             if moved:
                 logging.debug('Refreshing view')
@@ -368,12 +368,12 @@ class TreeViewUI(QWidget):
             if not os.path.exists(folder):
                 logging.info('Creating folder "{}"'.format(folder))
                 os.makedirs(folder)
-                self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FOLDER.SUCCESS').format(folder))
+                self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FOLDER.SUCCESS').format(foldername))
                 logging.debug('Refreshing view')
                 self._refresh_view(do_log=False)
                 self._enable()
             else:
-                self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FOLDER.FAIL.EXISTS').format(folder))
+                self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FOLDER.FAIL.EXISTS').format(foldername))
                 logging.error('Folder "{}" already exists'.format(folder))
 
     def _create_recipe(self):
@@ -396,14 +396,14 @@ class TreeViewUI(QWidget):
                 logging.info('Creating file "{}"'.format(file))
                 recipe = Recipe()
                 if save_recipe(recipe, file):
-                    self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FILE.SUCCESS').format(file))
+                    self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FILE.SUCCESS').format(filename))
                     logging.debug('Refreshing view')
                     self._refresh_view(do_log=False)
                     self._enable()
                 else:
                     logging.error('Could not create file "{}"'.format(file))
             else:
-                self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FOLDER.FAIL.EXISTS').format(folder))
+                self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FOLDER.FAIL.EXISTS').format(filename))
                 logging.error('Folder "{}" already exists'.format(folder))
 
     def _on_item_double_clicked(self, item, col):
