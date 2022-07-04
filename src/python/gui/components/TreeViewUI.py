@@ -14,7 +14,7 @@ import shutil
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
-from PyQt5.QtWidgets import QSizePolicy, QWidget, QGridLayout, QLabel, QTreeWidget, QTreeWidgetItem, QProgressBar, QPushButton, QMessageBox, QInputDialog, QLineEdit, QFileDialog, QDialog
+from PyQt5.QtWidgets import QMenu, QAction, QSizePolicy, QWidget, QGridLayout, QLabel, QTreeWidget, QTreeWidgetItem, QProgressBar, QPushButton, QMessageBox, QInputDialog, QLineEdit, QFileDialog, QDialog
 
 from lib.Utils import load_json_recipe
 from lib.AppConfig import app_conf_get
@@ -103,6 +103,13 @@ class TreeViewUI(QWidget):
 
         self.treewidget_dir = QTreeWidget()
         self.treewidget_dir.setHeaderHidden(True)
+        self.treewidget_dir.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.treewidget_dir.customContextMenuRequested.connect(self._open_menu)
+        # self.treewidget_dir.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.treewidget_dir.setDragEnabled(True)
+        self.treewidget_dir.setAcceptDrops(True)
+        self.treewidget_dir.setDropIndicatorShown(True)
+
         #curr_folder = self._get_formatted_current_folder(show_slash=False)
         #self.treewidget_dir.setHeaderLabel(curr_folder)
         self.treewidget_dir.itemDoubleClicked.connect(self._on_item_double_clicked)
@@ -144,6 +151,35 @@ class TreeViewUI(QWidget):
         self._refresh_view()
         self._enable()
 
+    def _open_menu(self, position):
+        indexes = self.treewidget_dir.selectedIndexes()
+
+        menu = QMenu()
+
+        action_delete = QAction('Delete', self)
+        action_delete.triggered.connect(self._delete)
+        icon = self.image_cache.get_or_load_icon('img.icon.delete', 'minus-solid.svg', 'icons')
+        action_delete.setIcon(icon)
+        action_move = QAction('Move', self)
+        action_move.triggered.connect(self._move)
+        icon = self.image_cache.get_or_load_icon('img.icon.move', 'arrow-right-arrow-left-solid.svg', 'icons')
+        action_move.setIcon(icon)
+        action_create_folder = QAction('Create Folder', self)
+        action_create_folder.triggered.connect(self._create_folder)
+        icon = self.image_cache.get_or_load_icon('img.icon.create_folder', 'folder-plus-solid.svg', 'icons')
+        action_create_folder.setIcon(icon)
+        action_create_file = QAction('Create Recipe', self)
+        action_create_file.triggered.connect(self._create_recipe)
+        icon = self.image_cache.get_or_load_icon('img.icon.create_recipe', 'plus-solid.svg', 'icons')
+        action_create_file.setIcon(icon)
+
+        menu.addAction(action_delete)
+        menu.addAction(action_move)
+        menu.addAction(action_create_folder)
+        menu.addAction(action_create_file)
+
+        menu.exec_(self.treewidget_dir.viewport().mapToGlobal(position))
+
     def _messagebox_delete_yesno(self, is_file, name):
         """Displays a message box with yes/no
         :param is_file: Flag whether is a file or a folder
@@ -164,6 +200,18 @@ class TreeViewUI(QWidget):
         name, ok = QInputDialog().getText(self, self.i18n.translate('GUI.TREEVIEW.ACTIONS.{}'.format('NEW_FILE' if is_file else 'NEW_FOLDER')), self.i18n.translate('GUI.TREEVIEW.ACTIONS.{}.TEXT'.format('NEW_FILE' if is_file else 'NEW_FOLDER')), QLineEdit.Normal, '')
         return name, ok
 
+    def _select_folder(self, directory):
+        """Select folder dialog
+        :param directory: The directory
+        """
+        filter = None
+        dialog = QFileDialog(self, self.i18n.translate('GUI.TREEVIEW.MESSAGE_BOX.SELECT_FOLDER'), directory, filter)
+        dialog.setFileMode(QFileDialog.DirectoryOnly)
+        if dialog.exec_() == QDialog.Accepted:
+            return dialog.selectedFiles()[0], True
+        else:
+            return '', False
+
     def _delete(self):
         """Deletes the selected folder/file"""
         curr_item = self.treewidget_dir.currentItem()
@@ -171,10 +219,11 @@ class TreeViewUI(QWidget):
             data = curr_item.data(0, Qt.UserRole)
             path_info = data['path_info']
             folder = data['folder']
+            filename = data['filename']
             deleted = False
             if os.path.isdir(path_info):
                 logging.info('Delete folder "{}"'.format(path_info))
-                if self._messagebox_delete_yesno(False, folder):
+                if self._messagebox_delete_yesno(False, filename):
                     try:
                         shutil.rmtree(path_info)
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_DIRECTORY').format(folder))
@@ -184,14 +233,14 @@ class TreeViewUI(QWidget):
                         logging.error('Failed to remove directory "{}": {}'.format(path_info, e))
             elif os.path.isfile(path_info) and path_info.endswith(self.recipe_suffix):
                 logging.info('Delete file "{}"'.format(path_info))
-                filename = data['filename'][:-len(self.recipe_suffix)]
-                if self._messagebox_delete_yesno(True, filename):
+                _filename = filename[:-len(self.recipe_suffix)]
+                if self._messagebox_delete_yesno(True, _filename):
                     try:
                         os.remove(path_info)
-                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_FILE').format(filename))
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_FILE').format(_filename))
                         deleted = True
                     except Exception as e:
-                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_FILE.FAIL').format(filename))
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_FILE.FAIL').format(_filename))
                         logging.error('Failed to remove directory "{}": {}'.format(path_info, e))
             if deleted:
                 logging.debug('Refreshing view')
@@ -238,18 +287,6 @@ class TreeViewUI(QWidget):
                 logging.debug('Refreshing view')
                 self._refresh_view(do_log=False)
                 self._enable()
-
-    def _select_folder(self, directory):
-        """Select folder dialog
-        :param directory: The directory
-        """
-        filter = None
-        dialog = QFileDialog(self, 'Select folder', directory, filter)
-        dialog.setFileMode(QFileDialog.DirectoryOnly)
-        if dialog.exec_() == QDialog.Accepted:
-            return dialog.selectedFiles()[0], True
-        else:
-            return '', False
 
     def _create_folder(self):
         """Creates a new folder"""
