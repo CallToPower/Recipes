@@ -17,7 +17,7 @@ from gui.enums.Language import Language
 class Settings():
     """Settings"""
 
-    DEFAULT_SETTINGS_FOLDER_NAME = 'Recipes1'
+    DEFAULT_SETTINGS_FOLDER_NAME = 'Recipes-Cookbook'
     DEFAULT_WINDOW_WIDTH = 1200
     DEFAULT_WINDOW_HEIGHT = 800
 

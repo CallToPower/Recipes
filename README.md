@@ -35,7 +35,7 @@ GUI written in PyQt 5.
 ## Shipping
 
 * Freeze the app (create an executable)
-  * `pyinstaller Rezepte.spec`
+  * `pyinstaller Recipes.spec`
 
 ## Development: macOS
 

@@ -86,6 +86,11 @@ class TreeViewUI(QWidget):
         self.button_delete.setIcon(icon)
         self.button_delete.clicked[bool].connect(self._delete)
 
+        self.button_edit = QPushButton()
+        icon = self.image_cache.get_or_load_icon('img.icon.edit', 'pen-to-square-solid.svg', 'icons')
+        self.button_edit.setIcon(icon)
+        self.button_edit.clicked[bool].connect(self._edit)
+
         self.button_move = QPushButton()
         icon = self.image_cache.get_or_load_icon('img.icon.move', 'arrow-right-arrow-left-solid.svg', 'icons')
         self.button_move.setIcon(icon)
@@ -131,9 +136,10 @@ class TreeViewUI(QWidget):
 
         curr_gridid = 0
         self.grid.addWidget(self.line_1, curr_gridid, 0, 1, 3)
-        self.grid.addWidget(self.label_header, curr_gridid, 3, 1, 2)
-        self.grid.addWidget(self.line_2, curr_gridid, 5, 1, 1)
-        self.grid.addWidget(self.button_delete, curr_gridid, 6, 1, 1)
+        self.grid.addWidget(self.label_header, curr_gridid, 3, 1, 1)
+        self.grid.addWidget(self.line_2, curr_gridid, 4, 1, 1)
+        self.grid.addWidget(self.button_delete, curr_gridid, 5, 1, 1)
+        self.grid.addWidget(self.button_edit, curr_gridid, 6, 1, 1)
         self.grid.addWidget(self.button_move, curr_gridid, 7, 1, 1)
         self.grid.addWidget(self.button_create_folder, curr_gridid, 8, 1, 1)
         self.grid.addWidget(self.button_create_recipe, curr_gridid, 9, 1, 1)
@@ -160,6 +166,10 @@ class TreeViewUI(QWidget):
         action_delete.triggered.connect(self._delete)
         icon = self.image_cache.get_or_load_icon('img.icon.delete', 'minus-solid.svg', 'icons')
         action_delete.setIcon(icon)
+        action_edit = QAction('Edit', self)
+        action_edit.triggered.connect(self._edit)
+        icon = self.image_cache.get_or_load_icon('img.icon.edit', 'pen-to-square-solid.svg', 'icons')
+        action_edit.setIcon(icon)
         action_move = QAction('Move', self)
         action_move.triggered.connect(self._move)
         icon = self.image_cache.get_or_load_icon('img.icon.move', 'arrow-right-arrow-left-solid.svg', 'icons')
@@ -174,6 +184,7 @@ class TreeViewUI(QWidget):
         action_create_file.setIcon(icon)
 
         menu.addAction(action_delete)
+        menu.addAction(action_edit)
         menu.addAction(action_move)
         menu.addAction(action_create_folder)
         menu.addAction(action_create_file)
@@ -198,6 +209,13 @@ class TreeViewUI(QWidget):
         :param is_file: Flag whether is a file or a folder
         """
         name, ok = QInputDialog().getText(self, self.i18n.translate('GUI.TREEVIEW.ACTIONS.{}'.format('NEW_FILE' if is_file else 'NEW_FOLDER')), self.i18n.translate('GUI.TREEVIEW.ACTIONS.{}.TEXT'.format('NEW_FILE' if is_file else 'NEW_FOLDER')), QLineEdit.Normal, '')
+        return name, ok
+
+    def _get_file_name(self, filename, is_file=False):
+        """Asks for a new name
+        :param is_file: Flag whether is a file or a folder
+        """
+        name, ok = QInputDialog().getText(self, self.i18n.translate('GUI.TREEVIEW.ACTIONS.{}'.format('EDIT_FILE' if is_file else 'EDIT_FOLDER')), self.i18n.translate('GUI.TREEVIEW.ACTIONS.{}.TEXT'.format('EDIT_FILE' if is_file else 'EDIT_FOLDER')), QLineEdit.Normal, filename)
         return name, ok
 
     def _select_folder(self, directory):
@@ -243,6 +261,51 @@ class TreeViewUI(QWidget):
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_FILE.FAIL').format(_filename))
                         logging.error('Failed to remove directory "{}": {}'.format(path_info, e))
             if deleted:
+                logging.debug('Refreshing view')
+                self._refresh_view(do_log=False)
+                self._enable()
+        else:
+            logging.debug('No item selected')
+
+    def _edit(self):
+        """Edits the selected folder/file"""
+        curr_item = self.treewidget_dir.currentItem()
+        if curr_item:
+            data = curr_item.data(0, Qt.UserRole)
+            path_info = data['path_info']
+            folder = data['folder']
+            filename = data['filename']
+            edited = False
+            logging.info('Move "{}"'.format(path_info))
+            if os.path.isdir(path_info):
+                name, ok = self._get_file_name(filename, is_file=False)
+                if ok:
+                    dirname = os.path.dirname(path_info)
+                    new_path = os.path.join(dirname, name)
+                    logging.info('Moving "{}" to "{}"'.format(path_info, new_path))
+                    try:
+                        shutil.move(path_info, new_path)
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.EDIT_FOLDER.SUCCESS').format(filename, name))
+                        edited = True
+                    except Exception as e:
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.EDIT_FOLDER.FAIL').format(filename, new_path))
+                        logging.error('Failed to edit directory "{}" to "{}": {}'.format(filename, new_path, e))
+            elif os.path.isfile(path_info) and path_info.endswith(self.recipe_suffix):
+                _filename = filename[:-len(self.recipe_suffix)]
+                name, ok = self._get_file_name(_filename, is_file=False)
+                if ok:
+                    dirname = os.path.dirname(path_info)
+                    _name = '{}{}'.format(name, self.recipe_suffix)
+                    new_path = os.path.join(dirname, _name)
+                    logging.info('Moving "{}" to "{}"'.format(path_info, new_path))
+                    try:
+                        shutil.move(path_info, new_path)
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.EDIT_FILE.SUCCESS').format(_filename, name))
+                        edited = True
+                    except Exception as e:
+                        self.log(self.i18n.translate('GUI.TREEVIEW.LOG.EDIT_FILE.FAIL').format(_filename, name))
+                        logging.error('Failed to edit file "{}" to "{}": {}'.format(_filename, name, e))
+            if edited:
                 logging.debug('Refreshing view')
                 self._refresh_view(do_log=False)
                 self._enable()

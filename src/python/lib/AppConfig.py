@@ -19,7 +19,7 @@ _app_config = {
     'version': '1.0.0 β',
     'build': '2022-06-24-1',
     'copyright': '© 2022 Denis Meyer',
-    'settings.filename': 'settings.json',
+    'settings.filename': 'recipes-settings.json',
     'suffix.recipe': '.json',
     'about.logo.scaled.width': 280,
     'about.logo.scaled.height': 80,

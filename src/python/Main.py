@@ -12,6 +12,7 @@ import os
 import logging
 import urllib.request
 import json
+from pathlib import Path
 
 from lib.AppConfig import app_conf_get
 from lib.Settings import Settings
@@ -48,7 +49,7 @@ if __name__ == '__main__':
 
     
     i18n = I18n(Language.DE)
-    settings_basedir = os.getcwd()
+    settings_basedir = str(Path.home())
     settings = Settings(settings_basedir, app_conf_get('settings.filename'), i18n)
 
     basedir = os.path.dirname(__file__)
