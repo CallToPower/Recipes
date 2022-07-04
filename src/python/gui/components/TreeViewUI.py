@@ -13,7 +13,7 @@ import os
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
-from PyQt5.QtWidgets import QSizePolicy, QWidget, QGridLayout, QLabel, QTreeWidget, QTreeWidgetItem, QProgressBar
+from PyQt5.QtWidgets import QSizePolicy, QWidget, QGridLayout, QLabel, QTreeWidget, QTreeWidgetItem, QProgressBar, QPushButton
 
 from lib.Utils import load_json_recipe
 from lib.AppConfig import app_conf_get
@@ -78,6 +78,10 @@ class TreeViewUI(QWidget):
         self.line_2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.line_2.setStyleSheet(self.line_css)
 
+        self.button_edit_title = QPushButton()
+        icon = self.image_cache.get_or_load_icon('img.icon.edit', 'pen-to-square-solid.svg', 'icons')
+        self.button_edit_title.setIcon(icon)
+
         self.treewidget_dir = QTreeWidget()
         self.treewidget_dir.setHeaderHidden(True)
         #curr_folder = self._get_formatted_current_folder(show_slash=False)
@@ -102,7 +106,8 @@ class TreeViewUI(QWidget):
         curr_gridid = 0
         self.grid.addWidget(self.line_1, curr_gridid, 0, 1, 4)
         self.grid.addWidget(self.label_header, curr_gridid, 4, 1, 2)
-        self.grid.addWidget(self.line_2, curr_gridid, 6, 1, 4)
+        self.grid.addWidget(self.line_2, curr_gridid, 6, 1, 3)
+        self.grid.addWidget(self.button_edit_title, curr_gridid, 9, 1, 1)
 
         curr_gridid += 1
         self.grid.addWidget(self.treewidget_dir, curr_gridid, 0, 12, 10)
@@ -136,7 +141,7 @@ class TreeViewUI(QWidget):
                     self.recipe_windows[path_info].activateWindow()
                 else:
                     logging.debug('Recipe window does not exist, creating new')
-                    recipe_window = RecipeWindow(self.settings, self.i18n, path_info, json_recipe, self._recipe_window_closed)
+                    recipe_window = RecipeWindow(self.settings, self.i18n, self.image_cache, path_info, json_recipe, self._recipe_window_closed)
                     self.recipe_windows[path_info] = recipe_window
                     recipe_window.init_ui()
                     recipe_window.show()

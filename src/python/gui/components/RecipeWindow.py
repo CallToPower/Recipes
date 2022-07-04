@@ -13,7 +13,7 @@ import logging
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFileDialog, QLabel, QWidget, QSizePolicy, QGridLayout, QTableView, QHeaderView, QPushButton, QAbstractItemView
+from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QInputDialog, QLineEdit, QLabel, QWidget, QSizePolicy, QGridLayout, QTableView, QHeaderView, QPushButton, QAbstractItemView
 
 from lib.Utils import is_macos
 from i18n.I18n import I18n
@@ -27,11 +27,12 @@ from lib.Utils import save_recipe
 class RecipeWindow(QMainWindow):
     """Recipe window GUI"""
 
-    def __init__(self, settings, i18n, path_info, recipe, close_cb):
+    def __init__(self, settings, i18n, image_cache, path_info, recipe, close_cb):
         """Initializes the recipe window
 
         :param settings: The settings
         :param i18n: The i18n
+        :param image_cache: The image cache
         :param path_info: The path info
         :param recipe: The Recipe
         :param close_cb: Callback when the window closes
@@ -42,6 +43,7 @@ class RecipeWindow(QMainWindow):
 
         self.settings = settings
         self.i18n = i18n
+        self.image_cache = image_cache
         self.path_info = path_info
         self.recipe = recipe
         self.close_cb = close_cb
@@ -101,9 +103,14 @@ class RecipeWindow(QMainWindow):
 
         # Components
 
-        label_header = QLabel(self.recipe.name)
-        label_header.setFont(font_label_header)
-        label_header.setAlignment(Qt.AlignCenter)
+        self.label_header = QLabel(self.recipe.name)
+        self.label_header.setFont(font_label_header)
+        self.label_header.setAlignment(Qt.AlignCenter)
+
+        button_edit_recipe_name = QPushButton()
+        icon = self.image_cache.get_or_load_icon('img.icon.edit', 'pen-to-square-solid.svg', 'icons')
+        button_edit_recipe_name.setIcon(icon)
+        button_edit_recipe_name.clicked[bool].connect(self._edit_recipe_name)
 
         label_ingredients_line = QWidget()
         label_ingredients_line.setFixedHeight(1)
@@ -205,7 +212,8 @@ class RecipeWindow(QMainWindow):
 
         curr_gridid = 0
         layout_grid.setRowStretch(curr_gridid, 0)
-        layout_grid.addWidget(label_header, curr_gridid, 0, 1, 10)
+        layout_grid.addWidget(self.label_header, curr_gridid, 0, 1, 9)
+        layout_grid.addWidget(button_edit_recipe_name, curr_gridid, 9, 1, 1)
 
         curr_gridid += 1
         layout_grid.setRowStretch(curr_gridid, 0)
@@ -247,7 +255,22 @@ class RecipeWindow(QMainWindow):
 
         widget.setLayout(layout_grid)
 
+    def _edit_recipe_name(self):
+        """Edits the recipe name"""
+        name, ok = QInputDialog().getText(self, self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_RECIPE_NAME'), self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_RECIPE_NAME.TEXT'), QLineEdit.Normal, self.recipe.name)
+        if ok and name:
+            if name != self.recipe.name:
+                self.recipe.name = name
+                self.label_header.setText(self.recipe.name)
+                self._changed = True
+            else:
+                logging.debug('Name did not change')
+
     def _update_headers(self, table, len_v):
+        """Updates the headers
+        :param table: The table
+        :param len_v: Vertical header length
+        """
         header_v = table.verticalHeader()
         for i in range(0, len_v):
             header_v.setSectionResizeMode(i, QHeaderView.ResizeToContents)
