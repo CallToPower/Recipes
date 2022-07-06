@@ -28,7 +28,7 @@ class IngredientsTableModel(QAbstractTableModel):
 
         self.i18n = i18n
         self._data = self._ingredients_to_datalist(ingredients)
-        self._headers_h = [self.i18n.translate('GUI.RECIPE.HEADERS.INGREDIENTS.QUANTITY'), self.i18n.translate('GUI.RECIPE.HEADERS.INGREDIENTS.NAME'), self.i18n.translate('GUI.RECIPE.HEADERS.INGREDIENTS.ADDITION')]
+        self._headers_h = [self.i18n.translate('GUI.RECIPE.HEADERS.INGREDIENTS.QUANTITY', 'Quantity'), self.i18n.translate('GUI.RECIPE.HEADERS.INGREDIENTS.NAME', 'Name'), self.i18n.translate('GUI.RECIPE.HEADERS.INGREDIENTS.ADDITION', 'Addition')]
         self.headers_v = []
         self._cb_change = cb_change
 

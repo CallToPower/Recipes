@@ -162,23 +162,23 @@ class TreeViewUI(QWidget):
 
         menu = QMenu()
 
-        action_delete = QAction('Delete', self)
+        action_delete = QAction(self.i18n.translate('GUI.TREEVIEW.MENU.RIGHTCLICK.DELETE', 'Delete'), self)
         action_delete.triggered.connect(self._delete)
         icon = self.image_cache.get_or_load_icon('img.icon.delete', 'minus-solid.svg', 'icons')
         action_delete.setIcon(icon)
-        action_edit = QAction('Edit', self)
+        action_edit = QAction(self.i18n.translate('GUI.TREEVIEW.MENU.RIGHTCLICK.EDIT', 'Edit'), self)
         action_edit.triggered.connect(self._edit)
         icon = self.image_cache.get_or_load_icon('img.icon.edit', 'pen-to-square-solid.svg', 'icons')
         action_edit.setIcon(icon)
-        action_move = QAction('Move', self)
+        action_move = QAction(self.i18n.translate('GUI.TREEVIEW.MENU.RIGHTCLICK.MOVE', 'Move'), self)
         action_move.triggered.connect(self._move)
         icon = self.image_cache.get_or_load_icon('img.icon.move', 'arrow-right-arrow-left-solid.svg', 'icons')
         action_move.setIcon(icon)
-        action_create_folder = QAction('Create Folder', self)
+        action_create_folder = QAction(self.i18n.translate('GUI.TREEVIEW.MENU.RIGHTCLICK.CREATE_FOLDER', 'Create Folder'), self)
         action_create_folder.triggered.connect(self._create_folder)
         icon = self.image_cache.get_or_load_icon('img.icon.create_folder', 'folder-plus-solid.svg', 'icons')
         action_create_folder.setIcon(icon)
-        action_create_file = QAction('Create Recipe', self)
+        action_create_file = QAction(self.i18n.translate('GUI.TREEVIEW.MENU.RIGHTCLICK.CREATE_RECIPE', 'Create Recipe'), self)
         action_create_file.triggered.connect(self._create_recipe)
         icon = self.image_cache.get_or_load_icon('img.icon.create_recipe', 'plus-solid.svg', 'icons')
         action_create_file.setIcon(icon)
@@ -363,7 +363,7 @@ class TreeViewUI(QWidget):
         if os.path.isfile(path_info):
             dirname = os.path.dirname(path_info)
         foldername, ok = self._get_new_file_name(is_file=False)
-        if ok:
+        if ok and foldername:
             folder = os.path.join(dirname, foldername)
             if not os.path.exists(folder):
                 logging.info('Creating folder "{}"'.format(folder))
@@ -388,7 +388,7 @@ class TreeViewUI(QWidget):
         if os.path.isfile(path_info):
             dirname = os.path.dirname(path_info)
         filename, ok = self._get_new_file_name(is_file=True)
-        if ok:
+        if ok and filename:
             file = os.path.join(dirname, filename)
             if not file.endswith(self.recipe_suffix):
                 file = file + self.recipe_suffix

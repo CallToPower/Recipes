@@ -39,7 +39,7 @@ class AboutDialog(QDialog):
         """Initiates about dialog UI"""
         logging.debug('Initializing AboutDialog GUI')
 
-        self.setWindowTitle(self.i18n.translate('GUI.ABOUT.TITLE'))
+        self.setWindowTitle(self.i18n.translate('GUI.ABOUT.TITLE', 'About'))
 
         self.resize(450, 250)
 
@@ -58,16 +58,16 @@ class AboutDialog(QDialog):
         self.grid.setSpacing(10)
 
         self.label_empty = QLabel(' ')
-        self.label_author = QLabel(self.i18n.translate('GUI.ABOUT.LABEL.AUTHOR'))
+        self.label_author = QLabel(self.i18n.translate('GUI.ABOUT.LABEL.AUTHOR', 'Author'))
         self.label_author.setFont(self.font_label)
         self.label_author_val = QLabel(app_conf_get('author'))
-        self.label_copyright = QLabel(self.i18n.translate('GUI.ABOUT.LABEL.COPYRIGHT'))
+        self.label_copyright = QLabel(self.i18n.translate('GUI.ABOUT.LABEL.COPYRIGHT', 'Copyright'))
         self.label_copyright.setFont(self.font_label)
         self.label_copyright_val = QLabel(app_conf_get('copyright'))
-        self.label_version = QLabel(self.i18n.translate('GUI.ABOUT.LABEL.VERSION'))
+        self.label_version = QLabel(self.i18n.translate('GUI.ABOUT.LABEL.VERSION', 'Version'))
         self.label_version.setFont(self.font_label)
         self.label_version_val = QLabel(app_conf_get('version'))
-        self.label_build = QLabel(self.i18n.translate('GUI.ABOUT.LABEL.BUILD'))
+        self.label_build = QLabel(self.i18n.translate('GUI.ABOUT.LABEL.BUILD', 'Build'))
         self.label_build.setFont(self.font_label)
         self.label_build_val = QLabel(app_conf_get('build'))
 

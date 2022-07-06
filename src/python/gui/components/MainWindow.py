@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
 
         self._init_menu()
 
-        self.setWindowTitle(self.i18n.translate('GUI.MAIN.WINDOW.TITLE'))
+        self.setWindowTitle(self.i18n.translate('GUI.MAIN.WINDOW.TITLE', 'Recipes'))
         self.statusbar = self.statusBar()
 
         self.config = {}
@@ -66,6 +66,14 @@ class MainWindow(QMainWindow):
         self.resize(self.settings.window['width'], self.settings.window['height'])
 
         self._center()
+
+    # @override
+    def closeEvent(self, event):
+        """Close Event
+        :param event: The event
+        """
+        logging.info('Quitting')
+        self._quit_application()
 
     def _show_about_dialog(self):
         """Displays the about dialog"""
@@ -113,28 +121,28 @@ class MainWindow(QMainWindow):
 
         self.menu_bar.clear()
 
-        menu_application = self.menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.APPNAME'))
+        menu_application = self.menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.APPNAME', 'Recipes'))
 
-        action_about = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.ABOUT'), self)
+        action_about = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.ABOUT', 'About'), self)
         action_about.setShortcut('Ctrl+A')
         action_about.triggered.connect(self._show_about_dialog)
 
-        action_quit = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.QUIT'), self)
+        action_quit = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.QUIT', 'Quit'), self)
         action_quit.setShortcut('Ctrl+Q')
         action_quit.triggered.connect(self._quit_application)
 
         menu_application.addAction(action_about)
         menu_application.addAction(action_quit)
 
-        menu_language = self.menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.LANGUAGE'))
+        menu_language = self.menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.LANGUAGE', 'Language'))
 
-        action_lang_de = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.LANGUAGE.DE'), self)
+        action_lang_de = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.LANGUAGE.DE', 'Deutsch'), self)
         action_lang_de.setShortcut('Ctrl+1')
         action_lang_de.triggered.connect(self._change_language_lang_de)
         flag_de = self.image_cache.get_or_load_icon('img.flag.de', 'de.png', 'flags')
         action_lang_de.setIcon(flag_de)
 
-        action_lang_en = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.LANGUAGE.EN'), self)
+        action_lang_en = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.LANGUAGE.EN', 'English'), self)
         action_lang_en.setShortcut('Ctrl+2')
         action_lang_en.triggered.connect(self._change_language_lang_en)
         flag_en = self.image_cache.get_or_load_icon('img.flag.en', 'en.png', 'flags')
@@ -143,9 +151,9 @@ class MainWindow(QMainWindow):
         menu_language.addAction(action_lang_de)
         menu_language.addAction(action_lang_en)
 
-        menu_settings = self.menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.SETTINGS'))
+        menu_settings = self.menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.SETTINGS', 'Settings'))
 
-        action_settings_select_recipe_dir = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.SETTINGS.SELECT_RECIPE_DIR'), self)
+        action_settings_select_recipe_dir = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.SETTINGS.SELECT_RECIPE_DIR', 'Select Recipe Directory'), self)
         action_settings_select_recipe_dir.setShortcut('Ctrl+R')
         action_settings_select_recipe_dir.triggered.connect(self._select_recipe_dir)
         

@@ -59,7 +59,7 @@ class RecipeWindow(QMainWindow):
         if self.recipe.name:
             self.setWindowTitle(self.recipe.name)
         else:
-            self.setWindowTitle(self.i18n.translate('GUI.RECIPE.VIEW.EMPTY_WINDOW_TITLE'))
+            self.setWindowTitle(self.i18n.translate('GUI.RECIPE.VIEW.EMPTY_WINDOW_TITLE', 'Unknown Recipe'))
         self.statusbar = self.statusBar()
         if self.recipe.name:
             self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE').format(self.recipe.name))
@@ -78,9 +78,9 @@ class RecipeWindow(QMainWindow):
 
         self.menu_bar.clear()
 
-        menu_application = self.menu_bar.addMenu(self.i18n.translate('GUI.RECIPE.MENU.RECIPE.NAME'))
+        menu_application = self.menu_bar.addMenu(self.i18n.translate('GUI.RECIPE.MENU.RECIPE.NAME', 'Recipe'))
 
-        action_close = QAction(self.i18n.translate('GUI.RECIPE.MENU.ITEM.CLOSE'), self)
+        action_close = QAction(self.i18n.translate('GUI.RECIPE.MENU.ITEM.CLOSE', 'Close'), self)
         action_close.setShortcut('Ctrl+C')
         action_close.triggered.connect(self._close)
 
@@ -121,13 +121,13 @@ class RecipeWindow(QMainWindow):
         label_ingredients_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         label_ingredients_line.setStyleSheet(line_css)
 
-        label_ingredients = QLabel(self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.INGREDIENTS'))
+        label_ingredients = QLabel(self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.INGREDIENTS', 'Ingredients'))
         label_ingredients.setFont(font_label_info)
         label_ingredients.setAlignment(Qt.AlignLeft)
 
-        button_remove_ingredient = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.INGREDIENTS.REMOVE'))
+        button_remove_ingredient = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.INGREDIENTS.REMOVE', '-'))
         button_remove_ingredient.clicked[bool].connect(self._remove_ingredient)
-        button_add_ingredient = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.INGREDIENTS.ADD'))
+        button_add_ingredient = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.INGREDIENTS.ADD', '+'))
         button_add_ingredient.clicked[bool].connect(self._add_ingredient)
 
         self.table_ingredients = QTableView()
@@ -146,13 +146,13 @@ class RecipeWindow(QMainWindow):
         label_steps_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         label_steps_line.setStyleSheet(line_css)
 
-        label_steps = QLabel(self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.STEPS'))
+        label_steps = QLabel(self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.STEPS', 'Steps'))
         label_steps.setFont(font_label_info)
         label_steps.setAlignment(Qt.AlignLeft)
 
-        button_remove_step = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.STEPS.REMOVE'))
+        button_remove_step = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.STEPS.REMOVE', '-'))
         button_remove_step.clicked[bool].connect(self._remove_step)
-        button_add_step = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.STEPS.ADD'))
+        button_add_step = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.STEPS.ADD', '+'))
         button_add_step.clicked[bool].connect(self._add_step)
 
         self.table_steps = QTableView()
@@ -171,13 +171,13 @@ class RecipeWindow(QMainWindow):
         label_links_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         label_links_line.setStyleSheet(line_css)
 
-        label_links = QLabel(self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.LINKS'))
+        label_links = QLabel(self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.LINKS', 'Links'))
         label_links.setFont(font_label_info)
         label_links.setAlignment(Qt.AlignLeft)
 
-        button_remove_link = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.LINKS.REMOVE'))
+        button_remove_link = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.LINKS.REMOVE', '-'))
         button_remove_link.clicked[bool].connect(self._remove_link)
-        button_add_link = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.LINKS.ADD'))
+        button_add_link = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.LINKS.ADD', '+'))
         button_add_link.clicked[bool].connect(self._add_link)
         
         self.table_links = QTableView()
@@ -190,9 +190,9 @@ class RecipeWindow(QMainWindow):
         self.table_links.setWordWrap(True)
         self._update_headers(self.table_links, self.model_links, len(self.recipe.links))
 
-        button_cancel = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.CANCEL'))
+        button_cancel = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.CANCEL', 'Cancel'))
         button_cancel.clicked[bool].connect(self._cancel)
-        button_save = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.SAVE'))
+        button_save = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.SAVE', 'Save'))
         button_save.clicked[bool].connect(self._save)
 
         # Layout
@@ -287,19 +287,25 @@ class RecipeWindow(QMainWindow):
 
         return message_box.standardButton(message_box.clickedButton()) == QMessageBox.Yes
 
-    def _cancel(self):
+    def _cancel(self, event=None):
         """Cancels the change"""
         logging.debug('Cancel')
         if not self._changed:
             logging.info('Nothing changed, closing')
+            if event:
+                event.accept()
             self._close()
         else:
             logging.info('Something changed, asking whether to close')
             if self._close_yesno():
                 logging.info('Closing without saving')
+                if event:
+                    event.accept()
                 self._close()
             else:
                 logging.info('Not closing without saving')
+                if event:
+                    event.ignore()
 
     def _save(self):
         """Saves the change"""
@@ -396,16 +402,18 @@ class RecipeWindow(QMainWindow):
     def _close(self):
         """Close window"""
         logging.debug('Closing window')
-        self.close()
-
-    def closeEvent(self, _e):
-        """Window close event
-        
-        :param _e: _e [unused]
-        """
-        logging.debug('Window close triggered')
         if self.close_cb:
             self.close_cb(self.path_info)
+        self.close()
+
+    # @override
+    def closeEvent(self, event):
+        """Window close event
+        
+        :param event: The event
+        """
+        logging.debug('Window close triggered')
+        self._cancel(event)
 
     def show_message(self, msg=''):
         """Shows a message in the status bar
