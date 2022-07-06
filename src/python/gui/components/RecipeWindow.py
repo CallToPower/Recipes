@@ -316,6 +316,7 @@ class RecipeWindow(QMainWindow):
             return
         logging.info('Saving recipe to "{}"'.format(self.path_info))
         if save_recipe(self.recipe, self.path_info):
+            self._changed = False
             self._close()
 
     def _remove_ingredient(self):

@@ -439,7 +439,8 @@ class TreeViewUI(QWidget):
         :param id: The ID of the window
         """
         logging.debug('Recipe window "{}" closed'.format(id))
-        del self.recipe_windows[id]
+        if id in self.recipe_windows:
+            del self.recipe_windows[id]
 
     def _refresh_view(self, do_log=True):
         """Refreshes the view"""

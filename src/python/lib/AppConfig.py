@@ -17,7 +17,7 @@ import os
 _app_config = {
     'author': 'Denis Meyer',
     'version': '1.0.0',
-    'build': '2022-07-04-1',
+    'build': '2022-07-06-1',
     'copyright': '© 2022 Denis Meyer',
     'settings.filename': 'recipes-settings.json',
     'suffix.recipe': '.json',
