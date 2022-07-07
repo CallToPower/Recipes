@@ -27,12 +27,7 @@ class Recipe():
 
         self.steps = args['steps'] if 'steps' in args else []
 
-        self.links = []
-        if 'links' in args:
-            for d in args['links']:
-                lnk = Link()
-                lnk.init_from_obj(d)
-                self.links.append(lnk)
+        self.information = args['information'] if 'information' in args else ''
 
     def get_ingredients_obj(self):
         """Returns the ingredients as object"""
@@ -42,10 +37,10 @@ class Recipe():
         """Returns the steps as object"""
         return self.steps
 
-    def get_links_obj(self):
-        """Returns the links as object"""
-        return [d.as_obj() for d in self.links]
+    def get_information_obj(self):
+        """Returns the information as object"""
+        return self.information
 
     def __str__(self):
         """to string"""
-        return 'Recipe[name="{}",\ningredients=[{}],\nsteps="{}",\nlinks={}]'.format(self.name, ', '.join(str(x) for x in self.ingredients), self.steps, self.links)
+        return 'Recipe[name="{}",\ningredients=[{}],\nsteps="{}",\ninformation={}]'.format(self.name, ', '.join(str(x) for x in self.ingredients), self.steps, self.information)

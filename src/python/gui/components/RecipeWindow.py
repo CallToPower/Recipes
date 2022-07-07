@@ -19,7 +19,6 @@ from lib.Utils import is_macos
 from i18n.I18n import I18n
 from gui.components.IngredientsTableModel import IngredientsTableModel
 from gui.components.StepsTableModel import StepsTableModel
-from gui.components.LinksTableModel import LinksTableModel
 
 from lib.AppConfig import app_conf_get
 from lib.Utils import save_recipe
@@ -96,11 +95,15 @@ class RecipeWindow(QMainWindow):
 
         font_label_header = QFont()
         font_label_header.setBold(True)
-        font_label_header.setPointSize(app_conf_get('label.header.font.size', 20))
+        font_label_header.setPointSize(app_conf_get('label.header.font.size', 16))
 
         font_label_info = QFont()
         font_label_info.setBold(False)
-        font_label_info.setPointSize(app_conf_get('label.info.font.size', 16))
+        font_label_info.setPointSize(app_conf_get('label.info.font.size', 12))
+
+        font_label_text = QFont()
+        font_label_text.setBold(False)
+        font_label_text.setPointSize(app_conf_get('label.text.font.size', 10))
 
         line_css = 'background-color: #c0c0c0;'
         bgcolor_header_css = 'background-color: rgb(230, 230, 230);'
@@ -166,32 +169,26 @@ class RecipeWindow(QMainWindow):
         self._update_headers(self.table_steps, self.model_steps, len(self.recipe.steps))
         self.table_steps.horizontalHeader().setVisible(False)
 
-        label_links_line = QWidget()
-        label_links_line.setFixedHeight(1)
-        label_links_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        label_links_line.setStyleSheet(line_css)
+        label_info_line = QWidget()
+        label_info_line.setFixedHeight(1)
+        label_info_line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        label_info_line.setStyleSheet(line_css)
 
-        label_links = QLabel(self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.LINKS', 'Links'))
-        label_links.setFont(font_label_info)
-        label_links.setAlignment(Qt.AlignLeft)
+        label_info = QLabel(self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.INFO', 'Information'))
+        label_info.setFont(font_label_info)
+        label_info.setAlignment(Qt.AlignLeft)
 
-        button_remove_link = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.LINKS.REMOVE', '-'))
-        button_remove_link.clicked[bool].connect(self._remove_link)
-        button_add_link = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.LINKS.ADD', '+'))
-        button_add_link.clicked[bool].connect(self._add_link)
-        
-        self.table_links = QTableView()
-        self.table_links.setStyleSheet('QHeaderView::section { ' + bgcolor_header_css + ' }')
-        self.table_links.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.model_links = LinksTableModel(self.i18n, self.recipe.links, cb_change=self._on_links_changed)
-        self.table_links.setModel(self.model_links)
-        self.table_links.resizeRowsToContents()
-        self.table_links.resizeColumnsToContents()
-        self.table_links.setWordWrap(True)
-        self._update_headers(self.table_links, self.model_links, len(self.recipe.links))
+        button_edit_info = QPushButton()
+        icon = self.image_cache.get_or_load_icon('img.icon.edit', 'pen-to-square-solid.svg', 'icons')
+        button_edit_info.setIcon(icon)
+        button_edit_info.clicked[bool].connect(self._edit_info)
+
+        self.label_info_text = QLabel(self._get_short(self.recipe.information))
+        self.label_info_text.setFont(font_label_text)
+        self.label_info_text.setAlignment(Qt.AlignLeft)
 
         button_cancel = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.CANCEL', 'Cancel'))
-        button_cancel.clicked[bool].connect(self._cancel)
+        button_cancel.clicked[bool].connect(self._close)
         button_save = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.SAVE', 'Save'))
         button_save.clicked[bool].connect(self._save)
 
@@ -215,10 +212,10 @@ class RecipeWindow(QMainWindow):
         layout_grid.addWidget(button_add_ingredient, curr_gridid, 9, 1, 1)
 
         curr_gridid += 1
-        layout_grid.setRowStretch(curr_gridid, 1)
-        layout_grid.addWidget(self.table_ingredients, curr_gridid, 0, 5, 10)
+        layout_grid.setRowStretch(curr_gridid, 10)
+        layout_grid.addWidget(self.table_ingredients, curr_gridid, 0, 10, 10)
 
-        curr_gridid += 5
+        curr_gridid += 10
         layout_grid.setRowStretch(curr_gridid, 0)
         layout_grid.addWidget(label_steps, curr_gridid, 0, 1, 1)
         layout_grid.addWidget(label_steps_line, curr_gridid, 1, 1, 7)
@@ -226,19 +223,21 @@ class RecipeWindow(QMainWindow):
         layout_grid.addWidget(button_add_step, curr_gridid, 9, 1, 1)
 
         curr_gridid += 1
-        layout_grid.setRowStretch(curr_gridid, 1)
-        layout_grid.addWidget(self.table_steps, curr_gridid, 0, 5, 10)
+        layout_grid.setRowStretch(curr_gridid, 10)
+        layout_grid.addWidget(self.table_steps, curr_gridid, 0, 10, 10)
 
-        curr_gridid += 5
+        curr_gridid += 10
         layout_grid.setRowStretch(curr_gridid, 0)
-        layout_grid.addWidget(label_links, curr_gridid, 0, 1, 1)
-        layout_grid.addWidget(label_links_line, curr_gridid, 1, 1, 7)
-        layout_grid.addWidget(button_remove_link, curr_gridid, 8, 1, 1)
-        layout_grid.addWidget(button_add_link, curr_gridid, 9, 1, 1)
+        layout_grid.addWidget(label_info, curr_gridid, 0, 1, 1)
+        layout_grid.addWidget(label_info_line, curr_gridid, 1, 1, 8)
+        layout_grid.addWidget(button_edit_info, curr_gridid, 9, 1, 1)
 
         curr_gridid += 1
         layout_grid.setRowStretch(curr_gridid, 0)
-        layout_grid.addWidget(self.table_links, curr_gridid, 0, 1, 10)
+        layout_grid.addWidget(self.label_info_text, curr_gridid, 0, 1, 10)
+        
+        curr_gridid += 1
+        layout_grid.addWidget(QLabel(''), curr_gridid, 0, 1, 10)
 
         curr_gridid += 1
         layout_grid.setRowStretch(curr_gridid, 0)
@@ -353,22 +352,18 @@ class RecipeWindow(QMainWindow):
         self._update_headers(self.table_steps, self.model_steps, len(self.recipe.steps))
         self._changed = True
 
-    def _remove_link(self):
-        """Removes the currently selected link"""
-        logging.debug('Remove link')
-        rows = sorted(set(index.row() for index in self.table_links.selectedIndexes()))
-        if rows:
-            for row in rows:
-                logging.info('Remove row #{}'.format(row))
-                self.model_links.remove_row(row)
-            self._changed = True
-
-    def _add_link(self):
-        """Adds a new link"""
-        logging.debug('Add link')
-        self.model_links.add_row()
-        self._update_headers(self.table_links, self.model_links, len(self.recipe.links))
-        self._changed = True
+    def _edit_info(self):
+        """Edits information"""
+        logging.debug('Edit information')
+        info, ok = QInputDialog().getText(self, self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_INFORMATION'), self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_INFORMATION.TEXT'), QLineEdit.Normal, self.recipe.information)
+        if ok and info:
+            if info != self.recipe.information:
+                self.recipe.information = info
+                self.label_info_text.setText(self._get_short(self.recipe.information))
+                self.setWindowTitle(self.recipe.information)
+                self._changed = True
+            else:
+                logging.debug('Information did not change')
 
     def _on_ingredients_changed(self, lst):
         """On ingredients changed
@@ -386,19 +381,29 @@ class RecipeWindow(QMainWindow):
         self._changed = True
         self.recipe.steps = lst
 
-    def _on_links_changed(self, lst):
-        """On links changed
-        :param lst: Links list
+    def _on_information_changed(self, info):
+        """On information changed
+        :param info: Information string
         """
-        logging.debug('Links changed')
+        logging.debug('Information changed')
         self._changed = True
-        self.recipe.links = lst
+        self.recipe.information = info
 
     def _center(self):
         """Centers the window on the screen"""
         screen = QDesktopWidget().screenGeometry()
         self.move(int((screen.width() - self.geometry().width()) / 2),
                   int((screen.height() - self.geometry().height()) / 2))
+
+    def _get_short(self, str, max_length=app_conf_get('info.length.max', 80)):
+        """Returns a shortened string
+        :param str: String to shorten
+        :param max_length: Max string length
+        """
+        info = self.recipe.information
+        if len(info) > max_length:
+            return info[:(max_length - 3)] + '...'
+        return info
 
     def _close(self):
         """Close window"""

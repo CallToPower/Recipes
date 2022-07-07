@@ -57,11 +57,15 @@ class TreeViewUI(QWidget):
 
         self.font_label_header = QFont()
         self.font_label_header.setBold(True)
-        self.font_label_header.setPointSize(app_conf_get('label.header.font.size', 20))
+        self.font_label_header.setPointSize(app_conf_get('label.header.font.size', 16))
 
         self.font_label_info = QFont()
         self.font_label_info.setBold(False)
-        self.font_label_info.setPointSize(app_conf_get('label.info.font.size', 16))
+        self.font_label_info.setPointSize(app_conf_get('label.info.font.size', 12))
+
+        self.font_label_text = QFont()
+        self.font_label_text.setBold(False)
+        self.font_label_text.setPointSize(app_conf_get('label.text.font.size', 10))
 
         self.line_css = 'background-color: #c0c0c0;'
 
@@ -124,7 +128,7 @@ class TreeViewUI(QWidget):
         self.progressbar.setTextVisible(False)
 
         self.label_current_folder = QLabel(self.i18n.translate('GUI.TREEVIEW.CURRENT_FOLDER').format(self.settings.recipe_folder))
-        self.label_current_folder.setFont(self.font_label_info)
+        self.label_current_folder.setFont(self.font_label_text)
         self.label_current_folder.setAlignment(Qt.AlignLeft)
 
         # Layout

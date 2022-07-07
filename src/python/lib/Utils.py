@@ -123,7 +123,7 @@ def save_recipe(recipe, path):
         'name': recipe.name,
         'ingredients': recipe.get_ingredients_obj(),
         'steps': recipe.get_steps_obj(),
-        'links': recipe.get_links_obj()
+        'information': recipe.get_information_obj()
     }
 
     try:

@@ -48,10 +48,5 @@
         "Falls der Kuchen schon früher braun werden sollte, den Kuchen einfach für die restliche Backzeit mit Backpapier abdecken.",
         "Lecker, super saftig und passt super zu Schlagsahne. Es scheint zwar, dass es zu viele Äpfel sind im Verhältnis zum Teig, aber keine Angst. Der Teig sucht sich seinen Weg durch die Äpfel und dient eigentlich nur als zusammenhaltende Form für die Äpfel."
     ],
-    "links": [
-        {
-            "name": "Chefkoch",
-            "url": "https://www.chefkoch.de/rezepte/1140221220253617/Supersaftiger-Apfelkuchen.html"
-        }
-    ]
+    "information": "Quelle: https://www.chefkoch.de/rezepte/1140221220253617/Supersaftiger-Apfelkuchen.html"
 }
