@@ -14,8 +14,9 @@ import shutil
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
-from PyQt5.QtWidgets import QMenu, QAction, QSizePolicy, QWidget, QGridLayout, QLabel, QTreeWidget, QTreeWidgetItem, QProgressBar, QPushButton, QMessageBox, QInputDialog, QLineEdit, QFileDialog, QDialog
+from PyQt5.QtWidgets import QAbstractItemView, QMenu, QAction, QSizePolicy, QWidget, QGridLayout, QLabel, QTreeWidgetItem, QProgressBar, QPushButton, QMessageBox, QInputDialog, QLineEdit, QFileDialog, QDialog
 
+from gui.components.TreeWidget import TreeWidget
 from lib.Utils import load_json_recipe
 from lib.AppConfig import app_conf_get
 
@@ -110,14 +111,14 @@ class TreeViewUI(QWidget):
         self.button_create_recipe.setIcon(icon)
         self.button_create_recipe.clicked[bool].connect(self._create_recipe)
 
-        self.treewidget_dir = QTreeWidget()
+        self.treewidget_dir = TreeWidget(self._dropped)
         self.treewidget_dir.setHeaderHidden(True)
         self.treewidget_dir.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treewidget_dir.customContextMenuRequested.connect(self._open_menu)
-        # self.treewidget_dir.setSelectionMode(QAbstractItemView.SingleSelection)
-        #self.treewidget_dir.setDragEnabled(True)
-        #self.treewidget_dir.setAcceptDrops(True)
-        #self.treewidget_dir.setDropIndicatorShown(True)
+        self.treewidget_dir.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.treewidget_dir.setDragEnabled(True)
+        self.treewidget_dir.setAcceptDrops(True)
+        self.treewidget_dir.setDropIndicatorShown(True)
 
         #curr_folder = self._get_formatted_current_folder(show_slash=False)
         #self.treewidget_dir.setHeaderLabel(curr_folder)
@@ -233,6 +234,51 @@ class TreeViewUI(QWidget):
             return dialog.selectedFiles()[0], True
         else:
             return '', False
+
+    def _dropped(self, source, destination):
+        """On event dropped
+        :param source: Source item
+        :param destination: Destination item (may be None)
+        """
+        if destination:
+            destination_path_info = destination['path_info']
+        else:
+            destination_path_info = self.settings.recipe_folder
+        if os.path.isdir(destination_path_info):
+            destination_folder = destination_path_info
+        else:
+            destination_folder = os.path.dirname(destination_path_info)
+
+        is_dir = False
+        source_path_info = source['path_info']
+        if os.path.isfile(source_path_info) and source_path_info.endswith(self.recipe_suffix):
+            source_folder = os.path.dirname(source_path_info)
+        elif os.path.isdir(source_path_info):
+            is_dir = True
+            source_folder = source_path_info
+
+        moved = False
+
+        if source_folder and destination_folder:
+            is_subfolder_of = False
+            if is_dir:
+                is_subfolder_of = destination_folder.startswith(source_folder)
+            if source_folder != destination_folder and not is_subfolder_of:
+                logging.debug('Move "{}" to "{}"'.format(source_path_info, destination_folder))
+                try:
+                    shutil.move(source_path_info, destination_folder)
+                    self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_{}'.format('DIRECTORY' if is_dir else 'FILE')).format(os.path.basename(source_path_info), os.path.basename(destination_folder)))
+                    moved = True
+                except Exception as e:
+                    self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_{}.FAIL'.format('DIRECTORY' if is_dir else 'FILE')).format(os.path.basename(dirname), os.path.basename(destination_folder)))
+                    logging.error('Failed to move "{}" to "{}": {}'.format(source_path_info, destination_folder, e))
+            else:
+                logging.info('Same folder, not moving')
+
+        if moved:
+            logging.debug('Refreshing view')
+            self._refresh_view(do_log=False)
+            self._enable()
 
     def _delete(self):
         """Deletes the selected folder/file"""
