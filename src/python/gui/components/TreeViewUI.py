@@ -56,81 +56,81 @@ class TreeViewUI(QWidget):
         """Initiates application UI"""
         logging.debug('Initializing MainWidget GUI')
 
-        self.font_label_header = QFont()
-        self.font_label_header.setBold(True)
-        self.font_label_header.setPointSize(app_conf_get('label.header.font.size', 16))
+        _font_label_header = QFont()
+        _font_label_header.setBold(True)
+        _font_label_header.setPointSize(app_conf_get('label.header.font.size', 16))
 
-        self.font_label_info = QFont()
-        self.font_label_info.setBold(False)
-        self.font_label_info.setPointSize(app_conf_get('label.info.font.size', 12))
+        _font_label_info = QFont()
+        _font_label_info.setBold(False)
+        _font_label_info.setPointSize(app_conf_get('label.info.font.size', 12))
 
-        self.font_label_text = QFont()
-        self.font_label_text.setBold(False)
-        self.font_label_text.setPointSize(app_conf_get('label.text.font.size', 10))
+        _font_label_text = QFont()
+        _font_label_text.setBold(False)
+        _font_label_text.setPointSize(app_conf_get('label.text.font.size', 10))
 
-        self.line_css = 'background-color: #c0c0c0;'
+        _line_css = 'background-color: #c0c0c0;'
 
         # Components
 
-        self.line_1 = QWidget()
-        self.line_1.setFixedHeight(1)
-        self.line_1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.line_1.setStyleSheet(self.line_css)
+        _line_1 = QWidget()
+        _line_1.setFixedHeight(1)
+        _line_1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        _line_1.setStyleSheet(_line_css)
 
-        self.label_header = QLabel(self.i18n.translate('GUI.TREEVIEW.HEADER'))
-        self.label_header.setFont(self.font_label_header)
-        self.label_header.setAlignment(Qt.AlignCenter)
+        _label_header = QLabel(self.i18n.translate('GUI.TREEVIEW.HEADER'))
+        _label_header.setFont(_font_label_header)
+        _label_header.setAlignment(Qt.AlignCenter)
 
-        self.line_2 = QWidget()
-        self.line_2.setFixedHeight(1)
-        self.line_2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.line_2.setStyleSheet(self.line_css)
+        _line_2 = QWidget()
+        _line_2.setFixedHeight(1)
+        _line_2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        _line_2.setStyleSheet(_line_css)
 
-        self.button_delete = QPushButton()
+        _button_delete = QPushButton()
         icon = self.image_cache.get_or_load_icon('img.icon.delete', 'minus-solid.svg', 'icons')
-        self.button_delete.setIcon(icon)
-        self.button_delete.clicked[bool].connect(self._delete)
+        _button_delete.setIcon(icon)
+        _button_delete.clicked[bool].connect(self._delete)
 
-        self.button_edit = QPushButton()
+        _button_edit = QPushButton()
         icon = self.image_cache.get_or_load_icon('img.icon.edit', 'pen-to-square-solid.svg', 'icons')
-        self.button_edit.setIcon(icon)
-        self.button_edit.clicked[bool].connect(self._edit)
+        _button_edit.setIcon(icon)
+        _button_edit.clicked[bool].connect(self._edit)
 
-        self.button_move = QPushButton()
+        _button_move = QPushButton()
         icon = self.image_cache.get_or_load_icon('img.icon.move', 'arrow-right-arrow-left-solid.svg', 'icons')
-        self.button_move.setIcon(icon)
-        self.button_move.clicked[bool].connect(self._move)
+        _button_move.setIcon(icon)
+        _button_move.clicked[bool].connect(self._move)
 
-        self.button_create_folder = QPushButton()
+        _button_create_folder = QPushButton()
         icon = self.image_cache.get_or_load_icon('img.icon.create_folder', 'folder-plus-solid.svg', 'icons')
-        self.button_create_folder.setIcon(icon)
-        self.button_create_folder.clicked[bool].connect(self._create_folder)
+        _button_create_folder.setIcon(icon)
+        _button_create_folder.clicked[bool].connect(self._create_folder)
 
-        self.button_create_recipe = QPushButton()
+        _button_create_recipe = QPushButton()
         icon = self.image_cache.get_or_load_icon('img.icon.create_recipe', 'plus-solid.svg', 'icons')
-        self.button_create_recipe.setIcon(icon)
-        self.button_create_recipe.clicked[bool].connect(self._create_recipe)
+        _button_create_recipe.setIcon(icon)
+        _button_create_recipe.clicked[bool].connect(self._create_recipe)
 
-        self.treewidget_dir = TreeWidget(self._dropped)
-        self.treewidget_dir.setHeaderHidden(True)
-        self.treewidget_dir.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.treewidget_dir.customContextMenuRequested.connect(self._open_menu)
-        self.treewidget_dir.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.treewidget_dir.setDragEnabled(True)
-        self.treewidget_dir.setAcceptDrops(True)
-        self.treewidget_dir.setDropIndicatorShown(True)
+        self._treewidget = TreeWidget(self._dropped)
+        self._treewidget.setHeaderHidden(True)
+        self._treewidget.setContextMenuPolicy(Qt.CustomContextMenu)
+        self._treewidget.customContextMenuRequested.connect(self._open_menu)
+        self._treewidget.setSelectionMode(QAbstractItemView.SingleSelection)
+        self._treewidget.setDragEnabled(True)
+        self._treewidget.setAcceptDrops(True)
+        self._treewidget.setDropIndicatorShown(True)
 
         #curr_folder = self._get_formatted_current_folder(show_slash=False)
-        #self.treewidget_dir.setHeaderLabel(curr_folder)
-        self.treewidget_dir.itemDoubleClicked.connect(self._on_item_double_clicked)
-        self.components.append(self.treewidget_dir)
+        #self._treewidget.setHeaderLabel(curr_folder)
+        self._treewidget.itemDoubleClicked.connect(self._on_item_double_clicked)
+        self.components.append(self._treewidget)
         
         self.progressbar = QProgressBar()
         self.progressbar.setTextVisible(False)
 
-        self.label_current_folder = QLabel(self.i18n.translate('GUI.TREEVIEW.CURRENT_FOLDER').format(self.settings.recipe_folder))
-        self.label_current_folder.setFont(self.font_label_text)
-        self.label_current_folder.setAlignment(Qt.AlignLeft)
+        _label_current_folder = QLabel(self.i18n.translate('GUI.TREEVIEW.CURRENT_FOLDER').format(self.settings.recipe_folder))
+        _label_current_folder.setFont(_font_label_text)
+        _label_current_folder.setAlignment(Qt.AlignLeft)
 
         # Layout
 
@@ -140,20 +140,20 @@ class TreeViewUI(QWidget):
         # self.grid.addWidget(widget, row, column, rowspan, columnspan)
 
         curr_gridid = 0
-        self.grid.addWidget(self.line_1, curr_gridid, 0, 1, 3)
-        self.grid.addWidget(self.label_header, curr_gridid, 3, 1, 1)
-        self.grid.addWidget(self.line_2, curr_gridid, 4, 1, 1)
-        self.grid.addWidget(self.button_delete, curr_gridid, 5, 1, 1)
-        self.grid.addWidget(self.button_edit, curr_gridid, 6, 1, 1)
-        self.grid.addWidget(self.button_move, curr_gridid, 7, 1, 1)
-        self.grid.addWidget(self.button_create_folder, curr_gridid, 8, 1, 1)
-        self.grid.addWidget(self.button_create_recipe, curr_gridid, 9, 1, 1)
+        self.grid.addWidget(_line_1, curr_gridid, 0, 1, 3)
+        self.grid.addWidget(_label_header, curr_gridid, 3, 1, 1)
+        self.grid.addWidget(_line_2, curr_gridid, 4, 1, 1)
+        self.grid.addWidget(_button_delete, curr_gridid, 5, 1, 1)
+        self.grid.addWidget(_button_edit, curr_gridid, 6, 1, 1)
+        self.grid.addWidget(_button_move, curr_gridid, 7, 1, 1)
+        self.grid.addWidget(_button_create_folder, curr_gridid, 8, 1, 1)
+        self.grid.addWidget(_button_create_recipe, curr_gridid, 9, 1, 1)
 
         curr_gridid += 1
-        self.grid.addWidget(self.treewidget_dir, curr_gridid, 0, 12, 10)
+        self.grid.addWidget(self._treewidget, curr_gridid, 0, 12, 10)
         
         curr_gridid += 12
-        self.grid.addWidget(self.label_current_folder, curr_gridid, 0, 1, 10)
+        self.grid.addWidget(_label_current_folder, curr_gridid, 0, 1, 10)
 
         curr_gridid += 1
         self.grid.addWidget(self.progressbar, curr_gridid, 0, 1, 10)
@@ -163,7 +163,7 @@ class TreeViewUI(QWidget):
         self._enable()
 
     def _open_menu(self, position):
-        indexes = self.treewidget_dir.selectedIndexes()
+        indexes = self._treewidget.selectedIndexes()
 
         menu = QMenu()
 
@@ -194,7 +194,7 @@ class TreeViewUI(QWidget):
         menu.addAction(action_create_folder)
         menu.addAction(action_create_file)
 
-        menu.exec_(self.treewidget_dir.viewport().mapToGlobal(position))
+        menu.exec_(self._treewidget.viewport().mapToGlobal(position))
 
     def _messagebox_delete_yesno(self, is_file, name):
         """Displays a message box with yes/no
@@ -282,7 +282,7 @@ class TreeViewUI(QWidget):
 
     def _delete(self):
         """Deletes the selected folder/file"""
-        curr_item = self.treewidget_dir.currentItem()
+        curr_item = self._treewidget.currentItem()
         if curr_item:
             data = curr_item.data(0, Qt.UserRole)
             path_info = data['path_info']
@@ -319,7 +319,7 @@ class TreeViewUI(QWidget):
 
     def _edit(self):
         """Edits the selected folder/file"""
-        curr_item = self.treewidget_dir.currentItem()
+        curr_item = self._treewidget.currentItem()
         if curr_item:
             data = curr_item.data(0, Qt.UserRole)
             path_info = data['path_info']
@@ -364,7 +364,7 @@ class TreeViewUI(QWidget):
 
     def _move(self):
         """Moves the selected file"""
-        curr_item = self.treewidget_dir.currentItem()
+        curr_item = self._treewidget.currentItem()
         if curr_item:
             data = curr_item.data(0, Qt.UserRole)
             path_info = data['path_info']
@@ -403,7 +403,7 @@ class TreeViewUI(QWidget):
 
     def _create_folder(self):
         """Creates a new folder"""
-        curr_item = self.treewidget_dir.currentItem()
+        curr_item = self._treewidget.currentItem()
         if curr_item:
             data = curr_item.data(0, Qt.UserRole)
             path_info = data['path_info']
@@ -428,7 +428,7 @@ class TreeViewUI(QWidget):
 
     def _create_recipe(self):
         """Creates a new recipe"""
-        curr_item = self.treewidget_dir.currentItem()
+        curr_item = self._treewidget.currentItem()
         if curr_item:
             data = curr_item.data(0, Qt.UserRole)
             path_info = data['path_info']
@@ -501,8 +501,8 @@ class TreeViewUI(QWidget):
         self.progressbar.setValue(0)
         self.progressbar.setMinimum(0)
         self.progressbar.setMaximum(0)
-        self.treewidget_dir.clear()
-        self._load_project_structure(self.current_folder, self.treewidget_dir)
+        self._treewidget.clear()
+        self._load_project_structure(self.current_folder, self._treewidget)
         self.progressbar.setMinimum(0)
         self.progressbar.setMaximum(100)
         self.progressbar.setValue(100)
@@ -536,6 +536,11 @@ class TreeViewUI(QWidget):
                     icon = self.image_cache.get_or_load_icon('img.icon.file-solid', 'file-solid.svg', 'icons')
             tw_item.setData(0, Qt.UserRole, data)
             tw_item.setIcon(0, icon)
+
+        model = self._treewidget.model()
+        for row in range(model.rowCount()):
+            index = model.index(row, 0)
+            self._treewidget.expand(index)
 
     def _get_formatted_current_folder(self, show_slash=False):
         """Returns the formatted current folder
