@@ -6,7 +6,7 @@
 # This file is part of Rezepte.
 #
 
-"""Phase Ready widget"""
+"""Tree View"""
 
 import logging
 import os

@@ -45,6 +45,7 @@ class MainWindow(QMainWindow):
     def init_settings(self):
         """Initializes the settings"""
         logging.debug('Initializing Settings')
+
         self.settings.load()
         if not self.settings.loaded_from_file:
             self.settings.save()
@@ -106,7 +107,7 @@ class MainWindow(QMainWindow):
             self._init_menu()
             self._init_widgets()
         else:
-            logging.info('Cancelled selecting output directory')
+            logging.debug('Cancelled selecting output directory')
 
     def _quit_application(self):
         """Quits the application"""
@@ -117,11 +118,11 @@ class MainWindow(QMainWindow):
         """Initializes the menu bar"""
         logging.debug('Initializing the menu bar')
 
-        self.menu_bar = QMenuBar() if is_macos() else self.menuBar()
+        menu_bar = QMenuBar() if is_macos() else self.menuBar()
 
-        self.menu_bar.clear()
+        menu_bar.clear()
 
-        menu_application = self.menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.APPNAME', 'Recipes'))
+        menu_application = menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.APPNAME', 'Recipes'))
 
         action_about = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.ABOUT', 'About'), self)
         action_about.setShortcut('Ctrl+A')
@@ -134,7 +135,7 @@ class MainWindow(QMainWindow):
         menu_application.addAction(action_about)
         menu_application.addAction(action_quit)
 
-        menu_language = self.menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.LANGUAGE', 'Language'))
+        menu_language = menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.LANGUAGE', 'Language'))
 
         action_lang_de = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.LANGUAGE.DE', 'Deutsch'), self)
         action_lang_de.setShortcut('Ctrl+1')
@@ -151,7 +152,7 @@ class MainWindow(QMainWindow):
         menu_language.addAction(action_lang_de)
         menu_language.addAction(action_lang_en)
 
-        menu_settings = self.menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.SETTINGS', 'Settings'))
+        menu_settings = menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.SETTINGS', 'Settings'))
 
         action_settings_select_recipe_dir = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.SETTINGS.SELECT_RECIPE_DIR', 'Select Recipe Directory'), self)
         action_settings_select_recipe_dir.setShortcut('Ctrl+R')
@@ -164,21 +165,6 @@ class MainWindow(QMainWindow):
         screen = QDesktopWidget().screenGeometry()
         self.move(int((screen.width() - self.geometry().width()) / 2),
                   int((screen.height() - self.geometry().height()) / 2))
-
-    def _set_state(self, state):
-        """Sets the state
-
-        :param state: The state
-        """
-        logging.debug('Setting phase: {}'.format(state.name))
-        self.state = state
-
-    def _is_in_state(self, state):
-        """Checks whether is in a given state
-
-        :param state: The state to check
-        """
-        return self.state == state
 
     def _change_language(self, lang):
         """Changes the language

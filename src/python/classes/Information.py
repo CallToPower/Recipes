@@ -6,18 +6,20 @@
 # This file is part of Rezepte.
 #
 
-"""Link"""
+"""Information"""
 
-class Link():
-    """Link"""
+class Information():
+    """Information"""
 
     def __init__(self):
-        """Initializes the link"""
+        """Initializes the information"""
+        logging.debug('Init Information')
+
         self.name = None
         self.url = None
 
     def init_from_obj(self, obj):
-        """Initializes the link
+        """Initializes the Information
         
         :param obj: Object containing information
         """
@@ -25,7 +27,7 @@ class Link():
         self.url = obj['url'] if 'url' in obj else ''
 
     def init_from_attr(self, name, url):
-        """Initializes the link
+        """Initializes the Information
 
         :param name: Name
         :param url: URL
@@ -39,4 +41,4 @@ class Link():
 
     def __str__(self):
         """to string"""
-        return 'Link[name={}, url={}]'.format(self.name, self.url)
+        return 'Information[name={}, url={}]'.format(self.name, self.url)

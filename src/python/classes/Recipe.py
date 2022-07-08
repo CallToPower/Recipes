@@ -6,8 +6,10 @@
 # This file is part of Rezepte.
 #
 
+import logging
+
 from classes.Ingredient import Ingredient
-from classes.Link import Link
+from classes.Information import Information
 
 """Recipe"""
 
@@ -16,6 +18,8 @@ class Recipe():
 
     def __init__(self, **args):
         """Initializes the recipe"""
+        logging.debug('Init recipe')
+
         self.name = args['name'] if 'name' in args else ''
 
         self.ingredients = []

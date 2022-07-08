@@ -34,22 +34,19 @@ def _initialize_logger():
                         datefmt=app_conf_get('logging.datefmt'))
 
     if app_conf_get('logging.log_to_file'):
-        handler_file = logging.FileHandler(
-            app_conf_get('logging.logfile'), mode='w', encoding=None, delay=False)
+        handler_file = logging.FileHandler(app_conf_get('logging.logfile'), mode='w', encoding=None, delay=False)
         handler_file.setLevel(app_conf_get('logging.loglevel'))
-        handler_file.setFormatter(logging.Formatter(
-            fmt=app_conf_get('logging.format'), datefmt=app_conf_get('logging.datefmt')))
+        handler_file.setFormatter(logging.Formatter(fmt=app_conf_get('logging.format'), datefmt=app_conf_get('logging.datefmt')))
         logging.getLogger().addHandler(handler_file)
 
 
 if __name__ == '__main__':
-    print('Current working directory: {}'.format(os.getcwd()))
-
     _initialize_logger()
 
     
     i18n = I18n(Language.DE)
     settings_basedir = str(Path.home())
+    logging.info('Settings base directory: "{}"'.format(settings_basedir))
     settings = Settings(settings_basedir, app_conf_get('settings.filename'), i18n)
 
     basedir = os.path.dirname(__file__)

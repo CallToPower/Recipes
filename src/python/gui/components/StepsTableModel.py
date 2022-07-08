@@ -28,8 +28,13 @@ class StepsTableModel(QAbstractTableModel):
         self.i18n = i18n
         self._data = self._copy_steps(steps)
         self._headers_h = []
-        self._headers_v = []
         self._cb_change = cb_change
+
+        self._update_headers_v()
+
+    def _update_headers_v(self):
+        """Updates the vertical headers"""
+        self._headers_v = [(i + 1) for i in range(0, len(self._data))]
 
     # @override
     def data(self, index, role=Qt.DisplayRole):
@@ -68,7 +73,7 @@ class StepsTableModel(QAbstractTableModel):
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
             if orientation == Qt.Vertical:
-                return section + 1
+                return self._headers_v[section]
 
     # @override
     def rowCount(self, index=QModelIndex()):
@@ -86,6 +91,7 @@ class StepsTableModel(QAbstractTableModel):
         """
         logging.debug('Remove row #{}'.format(row))
         self._data.pop(row)
+        self._update_headers_v()
         self.layoutChanged.emit()
         if self._cb_change:
             self._cb_change(self._data)
@@ -94,6 +100,7 @@ class StepsTableModel(QAbstractTableModel):
         """Adds a row"""
         logging.debug('Add row')
         self._data.append('')
+        self._update_headers_v()
         self.layoutChanged.emit()
 
     # @override

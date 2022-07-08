@@ -28,6 +28,8 @@ class TreeWidget(QTreeWidget):
 
     # @override
     def dropEvent(self, event):
+        logging.debug('Drop Event')
+
         source_item = None
         destination_item = None
 

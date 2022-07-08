@@ -27,6 +27,7 @@ class GUI():
         :param i18n: The i18n
         """
         logging.debug('Initializing MainGUI')
+
         self.basedir = basedir
         self.settings = settings
         self.i18n = i18n

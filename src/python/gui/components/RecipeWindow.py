@@ -61,7 +61,7 @@ class RecipeWindow(QMainWindow):
             self.setWindowTitle(self.i18n.translate('GUI.RECIPE.VIEW.EMPTY_WINDOW_TITLE', 'Unknown Recipe'))
         self.statusbar = self.statusBar()
         if self.recipe.name:
-            self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE').format(self.recipe.name))
+            self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE.OPENED').format(self.recipe.name))
 
         self._init_widgets()
 
@@ -85,10 +85,9 @@ class RecipeWindow(QMainWindow):
 
         menu_application.addAction(action_close)
 
-
     def _init_widgets(self):
         """Initializes widgets"""
-        logging.info('Initializing widgets')
+        logging.debug('Initializing widgets')
 
         widget = QWidget(self)
         self.setCentralWidget(widget)
@@ -141,7 +140,7 @@ class RecipeWindow(QMainWindow):
         self.table_ingredients.resizeRowsToContents()
         self.table_ingredients.resizeColumnsToContents()
         self.table_ingredients.setWordWrap(True)
-        self._update_headers(self.table_ingredients, self.model_ingredients, len(self.recipe.ingredients))
+        self._update_headers(self.table_ingredients, self.model_ingredients)
         self.table_ingredients.verticalHeader().setVisible(False)
 
         label_steps_line = QWidget()
@@ -166,7 +165,7 @@ class RecipeWindow(QMainWindow):
         self.table_steps.resizeRowsToContents()
         self.table_steps.resizeColumnsToContents()
         self.table_steps.setWordWrap(True)
-        self._update_headers(self.table_steps, self.model_steps, len(self.recipe.steps))
+        self._update_headers(self.table_steps, self.model_steps)
         self.table_steps.horizontalHeader().setVisible(False)
 
         label_info_line = QWidget()
@@ -191,6 +190,8 @@ class RecipeWindow(QMainWindow):
         button_cancel.clicked[bool].connect(self._close)
         button_save = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.SAVE', 'Save'))
         button_save.clicked[bool].connect(self._save)
+        button_save_close = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.SAVE_CLOSE', 'Save & Close'))
+        button_save_close.clicked[bool].connect(self._save_close)
 
         # Layout
 
@@ -241,13 +242,15 @@ class RecipeWindow(QMainWindow):
 
         curr_gridid += 1
         layout_grid.setRowStretch(curr_gridid, 0)
-        layout_grid.addWidget(button_cancel, curr_gridid, 0, 1, 5)
-        layout_grid.addWidget(button_save, curr_gridid, 5, 1, 5)
+        layout_grid.addWidget(button_cancel, curr_gridid, 0, 1, 3)
+        layout_grid.addWidget(button_save, curr_gridid, 3, 1, 3)
+        layout_grid.addWidget(button_save_close, curr_gridid, 6, 1, 4)
 
         widget.setLayout(layout_grid)
 
     def _edit_recipe_name(self):
         """Edits the recipe name"""
+        logging.debug('Edit recipe name')
         name, ok = QInputDialog().getText(self, self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_RECIPE_NAME'), self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_RECIPE_NAME.TEXT'), QLineEdit.Normal, self.recipe.name)
         if ok and name:
             if name != self.recipe.name:
@@ -257,16 +260,19 @@ class RecipeWindow(QMainWindow):
                 self._changed = True
             else:
                 logging.debug('Name did not change')
+        else:
+            logging.debug('Cancelled')
 
-    def _update_headers(self, table, model, len_v):
+    def _update_headers(self, table, model):
         """Updates the headers
         :param table: The table
         :param model: The model
-        :param len_v: Vertical header length
         """
+        logging.debug('Update table headers')
+
         header_v = table.verticalHeader()
         if header_v:
-            for i in range(0, len_v):
+            for i in range(0, max(0, len(model._headers_v))):
                 header_v.setSectionResizeMode(i, QHeaderView.ResizeToContents)
 
         header_h = table.horizontalHeader()
@@ -306,17 +312,29 @@ class RecipeWindow(QMainWindow):
                 if event:
                     event.ignore()
 
-    def _save(self):
+    def _save(self, close=False):
         """Saves the change"""
         logging.debug('Save')
         if not self._changed:
             logging.info('Nothing changed')
-            self._close()
+            self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE.SAVED').format(self.recipe.name))
+            if close:
+                self._close()
             return
         logging.info('Saving recipe to "{}"'.format(self.path_info))
         if save_recipe(self.recipe, self.path_info):
             self._changed = False
-            self._close()
+            self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE.SAVED').format(self.recipe.name))
+            if close:
+                self._close()
+        else:
+            logging.info('Could not save recipe to "{}"'.format(self.path_info))
+            self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE.SAVED.FAIL').format(self.recipe.name))
+
+    def _save_close(self):
+        """Saves the change"""
+        logging.debug('Save & Close')
+        self._save(close=True)
 
     def _remove_ingredient(self):
         """Removes the currently selected ingredient"""
@@ -332,7 +350,7 @@ class RecipeWindow(QMainWindow):
         """Adds a new ingredient"""
         logging.debug('Add ingredient')
         self.model_ingredients.add_row()
-        self._update_headers(self.table_ingredients, self.model_ingredients, len(self.recipe.ingredients))
+        self._update_headers(self.table_ingredients, self.model_ingredients)
         self._changed = True
 
     def _remove_step(self):
@@ -349,7 +367,7 @@ class RecipeWindow(QMainWindow):
         """Adds a new step"""
         logging.debug('Add step')
         self.model_steps.add_row()
-        self._update_headers(self.table_steps, self.model_steps, len(self.recipe.steps))
+        self._update_headers(self.table_steps, self.model_steps)
         self._changed = True
 
     def _edit_info(self):
