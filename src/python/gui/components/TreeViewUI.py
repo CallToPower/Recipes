@@ -183,7 +183,7 @@ class TreeViewUI(QWidget):
         action_create_folder.triggered.connect(self._create_folder)
         icon = self.image_cache.get_or_load_icon('img.icon.create_folder', 'folder-plus-solid.svg', 'icons')
         action_create_folder.setIcon(icon)
-        action_create_file = QAction(self.i18n.translate('GUI.TREEVIEW.MENU.RIGHTCLICK.CREATE_RECIPE', 'Create Recipe'), self)
+        action_create_file = QAction(self.i18n.translate('GUI.TREEVIEW.MENU.RIGHTCLICK.CREATE_FILE', 'Create Recipe'), self)
         action_create_file.triggered.connect(self._create_recipe)
         icon = self.image_cache.get_or_load_icon('img.icon.create_recipe', 'plus-solid.svg', 'icons')
         action_create_file.setIcon(icon)
