@@ -50,6 +50,9 @@ class StepsTableModel(QAbstractTableModel):
 
     # @override
     def setData(self, index, value, role):
+        if not index.isValid():
+            return False
+
         if not Qt.EditRole:
             logging.debug('Not edit role')
             return False
@@ -85,6 +88,28 @@ class StepsTableModel(QAbstractTableModel):
     def columnCount(self, index=QModelIndex()):
         return 1
 
+    # @override
+    def flags(self, index):
+        if not index.isValid():
+            return Qt.ItemIsDropEnabled
+        if index.row() < len(self._data):
+            return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
+        return Qt.ItemIsEnabled | Qt.ItemIsEditable
+
+    def supportedDropActions(self):
+        return Qt.MoveAction
+
+    def relocate_row(self, from_index, to_index):
+        logging.debug('Relocate row from {} to {}'.format(from_index, to_index))
+        len_data = len(self._data)
+        if from_index >= 0 and from_index < len_data and to_index >= 0 and to_index < len_data:
+            self._data.insert(to_index, self._data.pop(from_index))
+            self.layoutChanged.emit()
+            if self._cb_change:
+                self._cb_change(self._data)
+        else:
+            logging.error('Index does not fit for data length {}'.format(len_data))
+
     def remove_row(self, row):
         """Removes the selected row
         :param row: Row
@@ -102,10 +127,6 @@ class StepsTableModel(QAbstractTableModel):
         self._data.append('')
         self._update_headers_v()
         self.layoutChanged.emit()
-
-    # @override
-    def flags(self, index):
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
 
     def _copy_steps(self, steps):
         """Copies the steps

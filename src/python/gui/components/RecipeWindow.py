@@ -13,11 +13,13 @@ import logging
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QInputDialog, QLineEdit, QLabel, QWidget, QSizePolicy, QGridLayout, QTableView, QHeaderView, QPushButton, QAbstractItemView, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QInputDialog, QLineEdit, QLabel, QWidget, QSizePolicy, QGridLayout, QHeaderView, QPushButton, QAbstractItemView, QMessageBox
 
 from lib.Utils import is_macos
 from i18n.I18n import I18n
+from gui.components.IngredientsTableView import IngredientsTableView
 from gui.components.IngredientsTableModel import IngredientsTableModel
+from gui.components.StepsTableView import StepsTableView
 from gui.components.StepsTableModel import StepsTableModel
 
 from lib.AppConfig import app_conf_get
@@ -132,16 +134,10 @@ class RecipeWindow(QMainWindow):
         button_add_ingredient = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.INGREDIENTS.ADD', '+'))
         button_add_ingredient.clicked[bool].connect(self._add_ingredient)
 
-        self.table_ingredients = QTableView()
-        self.table_ingredients.setStyleSheet('QHeaderView::section { ' + bgcolor_header_css + ' }')
-        self.table_ingredients.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.table_ingredients = IngredientsTableView(cb_dropped=self._ingredients_dropped)
         self.model_ingredients = IngredientsTableModel(self.i18n, self.recipe.ingredients, cb_change=self._on_ingredients_changed)
         self.table_ingredients.setModel(self.model_ingredients)
-        self.table_ingredients.resizeRowsToContents()
-        self.table_ingredients.resizeColumnsToContents()
-        self.table_ingredients.setWordWrap(True)
         self._update_headers(self.table_ingredients, self.model_ingredients)
-        self.table_ingredients.verticalHeader().setVisible(False)
 
         label_steps_line = QWidget()
         label_steps_line.setFixedHeight(1)
@@ -157,16 +153,10 @@ class RecipeWindow(QMainWindow):
         button_add_step = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.STEPS.ADD', '+'))
         button_add_step.clicked[bool].connect(self._add_step)
 
-        self.table_steps = QTableView()
-        self.table_steps.setStyleSheet('QHeaderView::section { ' + bgcolor_header_css + ' }')
-        self.table_steps.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.table_steps = StepsTableView(cb_dropped=self._steps_dropped)
         self.model_steps = StepsTableModel(self.i18n, self.recipe.steps, cb_change=self._on_steps_changed)
         self.table_steps.setModel(self.model_steps)
-        self.table_steps.resizeRowsToContents()
-        self.table_steps.resizeColumnsToContents()
-        self.table_steps.setWordWrap(True)
         self._update_headers(self.table_steps, self.model_steps)
-        self.table_steps.horizontalHeader().setVisible(False)
 
         label_info_line = QWidget()
         label_info_line.setFixedHeight(1)
@@ -247,6 +237,22 @@ class RecipeWindow(QMainWindow):
         layout_grid.addWidget(button_save_close, curr_gridid, 6, 1, 4)
 
         widget.setLayout(layout_grid)
+
+    def _ingredients_dropped(self, from_index, to_index):
+        """On ingredients dropped
+        :param from_index: From index
+        :param to_index: To index
+        """
+        logging.debug('Ingredients dropped from {} to {}'.format(from_index, to_index))
+        self.model_ingredients.relocate_row(from_index, to_index)
+
+    def _steps_dropped(self, from_index, to_index):
+        """On steps dropped
+        :param from_index: From index
+        :param to_index: To index
+        """
+        logging.debug('Steps dropped from {} to {}'.format(from_index, to_index))
+        self.model_steps.relocate_row(from_index, to_index)
 
     def _edit_recipe_name(self):
         """Edits the recipe name"""
