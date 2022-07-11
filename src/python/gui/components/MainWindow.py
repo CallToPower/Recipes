@@ -155,9 +155,9 @@ class MainWindow(QMainWindow):
         menu_settings = menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.SETTINGS', 'Settings'))
 
         action_settings_select_recipe_dir = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.SETTINGS.SELECT_RECIPE_DIR', 'Select Recipe Directory'), self)
-        action_settings_select_recipe_dir.setShortcut('Ctrl+R')
+        action_settings_select_recipe_dir.setShortcut('Ctrl+O')
         action_settings_select_recipe_dir.triggered.connect(self._select_recipe_dir)
-        
+
         menu_settings.addAction(action_settings_select_recipe_dir)
 
     def _center(self):
