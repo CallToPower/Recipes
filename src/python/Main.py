@@ -16,7 +16,7 @@ from pathlib import Path
 
 from lib.AppConfig import app_conf_get
 from lib.Settings import Settings
-from gui.MainGui import GUI
+from gui.MainGui import MainGUI
 from i18n.I18n import I18n
 from gui.enums.Language import Language
 
@@ -39,16 +39,18 @@ def _initialize_logger():
         handler_file.setFormatter(logging.Formatter(fmt=app_conf_get('logging.format'), datefmt=app_conf_get('logging.datefmt')))
         logging.getLogger().addHandler(handler_file)
 
-
 if __name__ == '__main__':
     _initialize_logger()
 
-    
     i18n = I18n(Language.DE)
     settings_basedir = str(Path.home())
     logging.info('Settings base directory: "{}"'.format(settings_basedir))
     settings = Settings(settings_basedir, app_conf_get('settings.filename'), i18n)
+    settings.load()
+    if not settings.loaded_from_file:
+        settings.save()
+    i18n.change_language(settings.language)
 
     basedir = os.path.dirname(__file__)
-    gui = GUI(basedir, settings, i18n)
+    gui = MainGUI(basedir, settings, i18n)
     gui.run()

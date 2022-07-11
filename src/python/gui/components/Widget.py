@@ -16,6 +16,7 @@ from PyQt5.QtCore import Qt, QSize, QUrl
 from PyQt5.QtGui import QFont, QIcon, QDesktopServices
 from PyQt5.QtWidgets import QAbstractItemView, QMenu, QAction, QSizePolicy, QWidget, QGridLayout, QLabel, QTreeWidgetItem, QProgressBar, QPushButton, QMessageBox, QInputDialog, QLineEdit, QFileDialog, QDialog
 
+from gui.data.IconDefinitions import FOLDER, FILE, DELETE, EDIT, MOVE, CREATE_FOLDER, CREATE_FILE, OPEN_EXTERNAL
 from gui.components.TreeWidget import TreeWidget
 from lib.Utils import load_json_recipe
 from lib.AppConfig import app_conf_get
@@ -87,27 +88,27 @@ class Widget(QWidget):
         line_2.setStyleSheet(line_css)
 
         button_delete = QPushButton()
-        icon = self.image_cache.get_or_load_icon('img.icon.delete', 'minus-solid.svg', 'icons')
+        icon = self.image_cache.get_or_load_icon(DELETE)
         button_delete.setIcon(icon)
         button_delete.clicked[bool].connect(self._delete)
 
         button_edit = QPushButton()
-        icon = self.image_cache.get_or_load_icon('img.icon.edit', 'pen-to-square-solid.svg', 'icons')
+        icon = self.image_cache.get_or_load_icon(EDIT)
         button_edit.setIcon(icon)
         button_edit.clicked[bool].connect(self._edit)
 
         button_move = QPushButton()
-        icon = self.image_cache.get_or_load_icon('img.icon.move', 'arrow-right-arrow-left-solid.svg', 'icons')
+        icon = self.image_cache.get_or_load_icon(MOVE)
         button_move.setIcon(icon)
         button_move.clicked[bool].connect(self._move)
 
         button_create_folder = QPushButton()
-        icon = self.image_cache.get_or_load_icon('img.icon.create_folder', 'folder-plus-solid.svg', 'icons')
+        icon = self.image_cache.get_or_load_icon(CREATE_FOLDER)
         button_create_folder.setIcon(icon)
         button_create_folder.clicked[bool].connect(self._create_folder)
 
         button_create_recipe = QPushButton()
-        icon = self.image_cache.get_or_load_icon('img.icon.create_recipe', 'plus-solid.svg', 'icons')
+        icon = self.image_cache.get_or_load_icon(CREATE_FILE)
         button_create_recipe.setIcon(icon)
         button_create_recipe.clicked[bool].connect(self._create_recipe)
 
@@ -137,7 +138,7 @@ class Widget(QWidget):
         label_current_folder.setAlignment(Qt.AlignLeft)
 
         button_open_recipe_folder = QPushButton()
-        icon = self.image_cache.get_or_load_icon('img.icon.open', 'arrow-up-right-from-square-solid.svg', 'icons')
+        icon = self.image_cache.get_or_load_icon(OPEN_EXTERNAL)
         button_open_recipe_folder.setIcon(icon)
         button_open_recipe_folder.clicked[bool].connect(self._open_recipe_folder)
         button_open_recipe_folder.setIconSize(QSize(12, 12))
@@ -189,23 +190,23 @@ class Widget(QWidget):
 
         action_delete = QAction(self.i18n.translate('GUI.TREEVIEW.MENU.RIGHTCLICK.DELETE', 'Delete'), self)
         action_delete.triggered.connect(self._delete)
-        icon = self.image_cache.get_or_load_icon('img.icon.delete', 'minus-solid.svg', 'icons')
+        icon = self.image_cache.get_or_load_icon(DELETE)
         action_delete.setIcon(icon)
         action_edit = QAction(self.i18n.translate('GUI.TREEVIEW.MENU.RIGHTCLICK.EDIT', 'Edit'), self)
         action_edit.triggered.connect(self._edit)
-        icon = self.image_cache.get_or_load_icon('img.icon.edit', 'pen-to-square-solid.svg', 'icons')
+        icon = self.image_cache.get_or_load_icon(EDIT)
         action_edit.setIcon(icon)
         action_move = QAction(self.i18n.translate('GUI.TREEVIEW.MENU.RIGHTCLICK.MOVE', 'Move'), self)
         action_move.triggered.connect(self._move)
-        icon = self.image_cache.get_or_load_icon('img.icon.move', 'arrow-right-arrow-left-solid.svg', 'icons')
+        icon = self.image_cache.get_or_load_icon(MOVE)
         action_move.setIcon(icon)
         action_create_folder = QAction(self.i18n.translate('GUI.TREEVIEW.MENU.RIGHTCLICK.CREATE_FOLDER', 'Create Folder'), self)
         action_create_folder.triggered.connect(self._create_folder)
-        icon = self.image_cache.get_or_load_icon('img.icon.create_folder', 'folder-plus-solid.svg', 'icons')
+        icon = self.image_cache.get_or_load_icon(CREATE_FOLDER)
         action_create_folder.setIcon(icon)
         action_create_file = QAction(self.i18n.translate('GUI.TREEVIEW.MENU.RIGHTCLICK.CREATE_FILE', 'Create Recipe'), self)
         action_create_file.triggered.connect(self._create_recipe)
-        icon = self.image_cache.get_or_load_icon('img.icon.create_recipe', 'plus-solid.svg', 'icons')
+        icon = self.image_cache.get_or_load_icon(CREATE_FILE)
         action_create_file.setIcon(icon)
 
         menu.addAction(action_delete)
@@ -548,12 +549,12 @@ class Widget(QWidget):
             }
             if os.path.isdir(path_info):
                 tw_item = QTreeWidgetItem(tree, [os.path.basename(filename)])
-                icon = self.image_cache.get_or_load_icon('img.icon.folder-regular', 'folder-regular.svg', 'icons')
+                icon = self.image_cache.get_or_load_icon(FOLDER)
                 self._load_project_structure(path_info, tw_item)
             else:
                 if path_info.endswith(self.recipe_suffix):
                     tw_item = QTreeWidgetItem(tree, [os.path.basename(filename)[:-len(self.recipe_suffix)]])
-                    icon = self.image_cache.get_or_load_icon('img.icon.file-solid', 'file-solid.svg', 'icons')
+                    icon = self.image_cache.get_or_load_icon(FILE)
             tw_item.setData(0, Qt.UserRole, data)
             tw_item.setIcon(0, icon)
 

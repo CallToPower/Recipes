@@ -16,7 +16,7 @@ from PyQt5 import QtWidgets
 from lib.ImageCache import ImageCache
 from gui.components.MainWindow import MainWindow
 
-class GUI():
+class MainGUI():
     """Main GUI"""
 
     def __init__(self, basedir, settings, i18n):
@@ -42,7 +42,6 @@ class GUI():
         app = QtWidgets.QApplication(sys.argv)
 
         self.main_window = MainWindow(self.settings, self.i18n, image_cache=self.image_cache)
-        self.main_window.init_settings()
         self.main_window.init_ui()
         self.main_window.show()
 

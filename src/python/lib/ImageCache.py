@@ -47,7 +47,7 @@ class ImageCache():
 
         return val
 
-    def get_or_load_icon(self, key, name, path=None):
+    def _get_or_load_icon(self, key, name, path=None):
         """Gets or, if not present, loads the image
 
         :param key: The key
@@ -60,6 +60,13 @@ class ImageCache():
             val = self.get_icon(key)
 
         return val
+
+    def get_or_load_icon(self, icdef):
+        """Gets or, if not present, loads the image via IconDefinition class
+
+        :param icdef: The IconDefinition class
+        """
+        return self._get_or_load_icon(icdef.key, icdef.name, icdef.path)
 
     def set_pixmap(self, key, value, override=False):
         """Sets the value for the given key

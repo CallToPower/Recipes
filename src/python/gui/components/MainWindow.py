@@ -15,6 +15,8 @@ from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFil
 
 from lib.Utils import is_macos
 from i18n.I18n import I18n
+
+from gui.data.IconDefinitions import FLAG_DE, FLAG_EN, SELECT_RECIPE_DIR, ABOUT, QUIT
 from gui.enums.Language import Language
 from gui.components.Widget import Widget
 from gui.components.AboutDialog import AboutDialog
@@ -41,15 +43,6 @@ class MainWindow(QMainWindow):
         self.image_cache = image_cache
 
         self.state = None
-
-    def init_settings(self):
-        """Initializes the settings"""
-        logging.debug('Initializing Settings')
-
-        self.settings.load()
-        if not self.settings.loaded_from_file:
-            self.settings.save()
-        self.i18n.change_language(self.settings.language)
 
     def init_ui(self):
         """Initiates application UI"""
@@ -127,10 +120,14 @@ class MainWindow(QMainWindow):
         action_about = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.ABOUT', 'About'), self)
         action_about.setShortcut('Ctrl+A')
         action_about.triggered.connect(self._show_about_dialog)
+        icon = self.image_cache.get_or_load_icon(ABOUT)
+        action_about.setIcon(icon)
 
         action_quit = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.QUIT', 'Quit'), self)
         action_quit.setShortcut('Ctrl+Q')
         action_quit.triggered.connect(self._quit_application)
+        icon = self.image_cache.get_or_load_icon(QUIT)
+        action_quit.setIcon(icon)
 
         menu_application.addAction(action_about)
         menu_application.addAction(action_quit)
@@ -140,14 +137,14 @@ class MainWindow(QMainWindow):
         action_lang_de = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.LANGUAGE.DE', 'Deutsch'), self)
         action_lang_de.setShortcut('Ctrl+1')
         action_lang_de.triggered.connect(self._change_language_lang_de)
-        flag_de = self.image_cache.get_or_load_icon('img.flag.de', 'de.png', 'flags')
-        action_lang_de.setIcon(flag_de)
+        icon = self.image_cache.get_or_load_icon(FLAG_DE)
+        action_lang_de.setIcon(icon)
 
         action_lang_en = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.LANGUAGE.EN', 'English'), self)
         action_lang_en.setShortcut('Ctrl+2')
         action_lang_en.triggered.connect(self._change_language_lang_en)
-        flag_en = self.image_cache.get_or_load_icon('img.flag.en', 'en.png', 'flags')
-        action_lang_en.setIcon(flag_en)
+        icon = self.image_cache.get_or_load_icon(FLAG_EN)
+        action_lang_en.setIcon(icon)
 
         menu_language.addAction(action_lang_de)
         menu_language.addAction(action_lang_en)
@@ -157,6 +154,8 @@ class MainWindow(QMainWindow):
         action_settings_select_recipe_dir = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.SETTINGS.SELECT_RECIPE_DIR', 'Select Recipe Directory'), self)
         action_settings_select_recipe_dir.setShortcut('Ctrl+O')
         action_settings_select_recipe_dir.triggered.connect(self._select_recipe_dir)
+        icon = self.image_cache.get_or_load_icon(SELECT_RECIPE_DIR)
+        action_settings_select_recipe_dir.setIcon(icon)
 
         menu_settings.addAction(action_settings_select_recipe_dir)
 

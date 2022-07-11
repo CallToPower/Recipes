@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QInp
 
 from lib.Utils import is_macos
 from i18n.I18n import I18n
+from gui.data.IconDefinitions import EDIT, QUIT
 from gui.components.view.IngredientsTableView import IngredientsTableView
 from gui.components.view.StepsTableView import StepsTableView
 from gui.components.model.IngredientsTableModel import IngredientsTableModel
@@ -84,6 +85,8 @@ class RecipeWindow(QMainWindow):
         action_close = QAction(self.i18n.translate('GUI.RECIPE.MENU.ITEM.CLOSE', 'Close'), self)
         action_close.setShortcut('Ctrl+C')
         action_close.triggered.connect(self._close)
+        icon = self.image_cache.get_or_load_icon(QUIT)
+        action_close.setIcon(icon)
 
         menu_application.addAction(action_close)
 
@@ -116,7 +119,7 @@ class RecipeWindow(QMainWindow):
         self.label_header.setAlignment(Qt.AlignCenter)
 
         button_edit_recipe_name = QPushButton()
-        icon = self.image_cache.get_or_load_icon('img.icon.edit', 'pen-to-square-solid.svg', 'icons')
+        icon = self.image_cache.get_or_load_icon(EDIT)
         button_edit_recipe_name.setIcon(icon)
         button_edit_recipe_name.clicked[bool].connect(self._edit_recipe_name)
 
@@ -168,7 +171,7 @@ class RecipeWindow(QMainWindow):
         label_info.setAlignment(Qt.AlignLeft)
 
         button_edit_info = QPushButton()
-        icon = self.image_cache.get_or_load_icon('img.icon.edit', 'pen-to-square-solid.svg', 'icons')
+        icon = self.image_cache.get_or_load_icon(EDIT)
         button_edit_info.setIcon(icon)
         button_edit_info.clicked[bool].connect(self._edit_info)
 
