@@ -12,8 +12,8 @@ import logging
 import os
 import shutil
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtCore import Qt, QSize, QUrl
+from PyQt5.QtGui import QFont, QIcon, QDesktopServices
 from PyQt5.QtWidgets import QAbstractItemView, QMenu, QAction, QSizePolicy, QWidget, QGridLayout, QLabel, QTreeWidgetItem, QProgressBar, QPushButton, QMessageBox, QInputDialog, QLineEdit, QFileDialog, QDialog
 
 from gui.components.TreeWidget import TreeWidget
@@ -56,60 +56,60 @@ class Widget(QWidget):
         """Initiates application UI"""
         logging.debug('Initializing MainWidget GUI')
 
-        _font_label_header = QFont()
-        _font_label_header.setBold(True)
-        _font_label_header.setPointSize(app_conf_get('label.header.font.size', 16))
+        font_label_header = QFont()
+        font_label_header.setBold(True)
+        font_label_header.setPointSize(app_conf_get('label.header.font.size', 16))
 
-        _font_label_info = QFont()
-        _font_label_info.setBold(False)
-        _font_label_info.setPointSize(app_conf_get('label.info.font.size', 12))
+        font_label_info = QFont()
+        font_label_info.setBold(False)
+        font_label_info.setPointSize(app_conf_get('label.info.font.size', 12))
 
-        _font_label_text = QFont()
-        _font_label_text.setBold(False)
-        _font_label_text.setPointSize(app_conf_get('label.text.font.size', 10))
+        font_label_text = QFont()
+        font_label_text.setBold(False)
+        font_label_text.setPointSize(app_conf_get('label.text.font.size', 10))
 
-        _line_css = 'background-color: #c0c0c0;'
+        line_css = 'background-color: #c0c0c0;'
 
         # Components
 
-        _line_1 = QWidget()
-        _line_1.setFixedHeight(1)
-        _line_1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        _line_1.setStyleSheet(_line_css)
+        line_1 = QWidget()
+        line_1.setFixedHeight(1)
+        line_1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        line_1.setStyleSheet(line_css)
 
-        _label_header = QLabel(self.i18n.translate('GUI.TREEVIEW.HEADER'))
-        _label_header.setFont(_font_label_header)
-        _label_header.setAlignment(Qt.AlignCenter)
+        label_header = QLabel(self.i18n.translate('GUI.TREEVIEW.HEADER'))
+        label_header.setFont(font_label_header)
+        label_header.setAlignment(Qt.AlignCenter)
 
-        _line_2 = QWidget()
-        _line_2.setFixedHeight(1)
-        _line_2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        _line_2.setStyleSheet(_line_css)
+        line_2 = QWidget()
+        line_2.setFixedHeight(1)
+        line_2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        line_2.setStyleSheet(line_css)
 
-        _button_delete = QPushButton()
+        button_delete = QPushButton()
         icon = self.image_cache.get_or_load_icon('img.icon.delete', 'minus-solid.svg', 'icons')
-        _button_delete.setIcon(icon)
-        _button_delete.clicked[bool].connect(self._delete)
+        button_delete.setIcon(icon)
+        button_delete.clicked[bool].connect(self._delete)
 
-        _button_edit = QPushButton()
+        button_edit = QPushButton()
         icon = self.image_cache.get_or_load_icon('img.icon.edit', 'pen-to-square-solid.svg', 'icons')
-        _button_edit.setIcon(icon)
-        _button_edit.clicked[bool].connect(self._edit)
+        button_edit.setIcon(icon)
+        button_edit.clicked[bool].connect(self._edit)
 
-        _button_move = QPushButton()
+        button_move = QPushButton()
         icon = self.image_cache.get_or_load_icon('img.icon.move', 'arrow-right-arrow-left-solid.svg', 'icons')
-        _button_move.setIcon(icon)
-        _button_move.clicked[bool].connect(self._move)
+        button_move.setIcon(icon)
+        button_move.clicked[bool].connect(self._move)
 
-        _button_create_folder = QPushButton()
+        button_create_folder = QPushButton()
         icon = self.image_cache.get_or_load_icon('img.icon.create_folder', 'folder-plus-solid.svg', 'icons')
-        _button_create_folder.setIcon(icon)
-        _button_create_folder.clicked[bool].connect(self._create_folder)
+        button_create_folder.setIcon(icon)
+        button_create_folder.clicked[bool].connect(self._create_folder)
 
-        _button_create_recipe = QPushButton()
+        button_create_recipe = QPushButton()
         icon = self.image_cache.get_or_load_icon('img.icon.create_recipe', 'plus-solid.svg', 'icons')
-        _button_create_recipe.setIcon(icon)
-        _button_create_recipe.clicked[bool].connect(self._create_recipe)
+        button_create_recipe.setIcon(icon)
+        button_create_recipe.clicked[bool].connect(self._create_recipe)
 
         self._treewidget = TreeWidget(self._dropped)
         self._treewidget.setHeaderHidden(True)
@@ -128,9 +128,19 @@ class Widget(QWidget):
         self.progressbar = QProgressBar()
         self.progressbar.setTextVisible(False)
 
-        _label_current_folder = QLabel(self.i18n.translate('GUI.TREEVIEW.CURRENT_FOLDER').format(self.settings.recipe_folder))
-        _label_current_folder.setFont(_font_label_text)
-        _label_current_folder.setAlignment(Qt.AlignLeft)
+        try:
+            folder_name = os.path.basename(self.settings.recipe_folder)
+        except:
+            folder_name = self.settings.recipe_folder
+        label_current_folder = QLabel(self.i18n.translate('GUI.TREEVIEW.CURRENT_FOLDER').format(folder_name))
+        label_current_folder.setFont(font_label_info) # font_label_text
+        label_current_folder.setAlignment(Qt.AlignLeft)
+
+        button_open_recipe_folder = QPushButton()
+        icon = self.image_cache.get_or_load_icon('img.icon.open', 'arrow-up-right-from-square-solid.svg', 'icons')
+        button_open_recipe_folder.setIcon(icon)
+        button_open_recipe_folder.clicked[bool].connect(self._open_recipe_folder)
+        button_open_recipe_folder.setIconSize(QSize(12, 12))
 
         # Layout
 
@@ -140,20 +150,21 @@ class Widget(QWidget):
         # self.grid.addWidget(widget, row, column, rowspan, columnspan)
 
         curr_gridid = 0
-        self.grid.addWidget(_line_1, curr_gridid, 0, 1, 3)
-        self.grid.addWidget(_label_header, curr_gridid, 3, 1, 1)
-        self.grid.addWidget(_line_2, curr_gridid, 4, 1, 1)
-        self.grid.addWidget(_button_delete, curr_gridid, 5, 1, 1)
-        self.grid.addWidget(_button_edit, curr_gridid, 6, 1, 1)
-        self.grid.addWidget(_button_move, curr_gridid, 7, 1, 1)
-        self.grid.addWidget(_button_create_folder, curr_gridid, 8, 1, 1)
-        self.grid.addWidget(_button_create_recipe, curr_gridid, 9, 1, 1)
+        self.grid.addWidget(line_1, curr_gridid, 0, 1, 3)
+        self.grid.addWidget(label_header, curr_gridid, 3, 1, 1)
+        self.grid.addWidget(line_2, curr_gridid, 4, 1, 1)
+        self.grid.addWidget(button_delete, curr_gridid, 5, 1, 1)
+        self.grid.addWidget(button_edit, curr_gridid, 6, 1, 1)
+        self.grid.addWidget(button_move, curr_gridid, 7, 1, 1)
+        self.grid.addWidget(button_create_folder, curr_gridid, 8, 1, 1)
+        self.grid.addWidget(button_create_recipe, curr_gridid, 9, 1, 1)
 
         curr_gridid += 1
         self.grid.addWidget(self._treewidget, curr_gridid, 0, 12, 10)
         
         curr_gridid += 12
-        self.grid.addWidget(_label_current_folder, curr_gridid, 0, 1, 10)
+        self.grid.addWidget(label_current_folder, curr_gridid, 0, 1, 1)
+        self.grid.addWidget(button_open_recipe_folder, curr_gridid, 1, 1, 1)
 
         curr_gridid += 1
         self.grid.addWidget(self.progressbar, curr_gridid, 0, 1, 10)
@@ -161,6 +172,15 @@ class Widget(QWidget):
         self.setLayout(self.grid)
         self._refresh_view()
         self._enable()
+
+    def _open_recipe_folder(self):
+        """Opens the recipe folder in the native file explorer"""
+        logging.debug('Open recipe folder "{}"'.format(self.settings.recipe_folder))
+        if self.settings.recipe_folder:
+            if not QDesktopServices.openUrl(QUrl.fromLocalFile(self.settings.recipe_folder)):
+                logging.error('Could not open recipe folder "{}" in native file explorer'.format(self.settings.recipe_folder))
+        else:
+            logging.warn('Reciped folder not set, yet')
 
     def _open_menu(self, position):
         indexes = self._treewidget.selectedIndexes()
