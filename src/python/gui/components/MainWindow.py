@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFil
 from lib.Utils import is_macos
 from i18n.I18n import I18n
 from gui.enums.Language import Language
-from gui.components.TreeViewUI import TreeViewUI
+from gui.components.Widget import Widget
 from gui.components.AboutDialog import AboutDialog
 
 from lib.AppConfig import app_conf_get
@@ -185,7 +185,6 @@ class MainWindow(QMainWindow):
         logging.info('Resetting phases')
 
         self.setCentralWidget(None)
-        self.tree_view_ui = None
 
         self.config = {}
 
@@ -195,12 +194,12 @@ class MainWindow(QMainWindow):
         """Initializes widgets"""
         logging.info('Initializing widgets')
 
-        self.tree_view_ui = TreeViewUI(i18n=self.i18n,
-                                       settings=self.settings,
-                                       log=self.show_message,
-                                       image_cache=self.image_cache)
-        self.tree_view_ui.init_ui()
-        self.setCentralWidget(self.tree_view_ui)
+        widget = Widget(i18n=self.i18n,
+                        settings=self.settings,
+                        log=self.show_message,
+                        image_cache=self.image_cache)
+        widget.init_ui()
+        self.setCentralWidget(widget)
 
         self.show_message(self.i18n.translate('GUI.MAIN.LOG.TREEVIEW'))
 

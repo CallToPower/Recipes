@@ -6,7 +6,7 @@
 # This file is part of Rezepte.
 #
 
-"""Tree View"""
+"""Widget"""
 
 import logging
 import os
@@ -26,8 +26,8 @@ from gui.components.RecipeWindow import RecipeWindow
 from lib.Utils import save_recipe
 
 
-class TreeViewUI(QWidget):
-    """Tree View GUI"""
+class Widget(QWidget):
+    """Widget"""
 
     def __init__(self, i18n, settings, log, image_cache):
         """Initializes the widget
@@ -39,7 +39,7 @@ class TreeViewUI(QWidget):
         """
         super().__init__()
 
-        logging.debug('Initializing TreeViewUI')
+        logging.debug('Initializing Widget')
 
         self.i18n = i18n
         self.settings = settings

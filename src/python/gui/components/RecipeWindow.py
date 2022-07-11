@@ -17,10 +17,10 @@ from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QInp
 
 from lib.Utils import is_macos
 from i18n.I18n import I18n
-from gui.components.IngredientsTableView import IngredientsTableView
-from gui.components.IngredientsTableModel import IngredientsTableModel
-from gui.components.StepsTableView import StepsTableView
-from gui.components.StepsTableModel import StepsTableModel
+from gui.components.view.IngredientsTableView import IngredientsTableView
+from gui.components.view.StepsTableView import StepsTableView
+from gui.components.model.IngredientsTableModel import IngredientsTableModel
+from gui.components.model.StepsTableModel import StepsTableModel
 
 from lib.AppConfig import app_conf_get
 from lib.Utils import save_recipe
