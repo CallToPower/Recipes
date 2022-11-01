@@ -9,7 +9,6 @@
 import logging
 
 from classes.Ingredient import Ingredient
-from classes.Information import Information
 
 """Recipe"""
 

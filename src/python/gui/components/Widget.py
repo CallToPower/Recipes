@@ -181,7 +181,7 @@ class Widget(QWidget):
             if not QDesktopServices.openUrl(QUrl.fromLocalFile(self.settings.recipe_folder)):
                 logging.error('Could not open recipe folder "{}" in native file explorer'.format(self.settings.recipe_folder))
         else:
-            logging.warn('Reciped folder not set, yet')
+            logging.warn('Recipe folder not set, yet')
 
     def _open_menu(self, position):
         indexes = self._treewidget.selectedIndexes()

@@ -67,6 +67,7 @@ _translations_en = {
     'GUI.RECIPE.VIEW.ACTIONS.STEPS.REMOVE': '-',
     'GUI.RECIPE.VIEW.ACTIONS.STEPS.ADD': '+',
     'GUI.RECIPE.VIEW.ACTIONS.CANCEL': 'Close',
+    'GUI.RECIPE.VIEW.ACTIONS.EXPORT': 'Export',
     'GUI.RECIPE.VIEW.ACTIONS.SAVE': 'Save',
     'GUI.RECIPE.VIEW.ACTIONS.SAVE_CLOSE': 'Save and Close',
     'GUI.RECIPE.HEADERS.INGREDIENTS.QUANTITY': 'Quantity',
@@ -83,6 +84,8 @@ _translations_en = {
     'GUI.RECIPE.LOG.RECIPE.OPENED': 'Opened recipe: "{}"',
     'GUI.RECIPE.LOG.RECIPE.SAVED': 'Saved recipe "{}"',
     'GUI.RECIPE.LOG.RECIPE.SAVED.FAIL': 'Failed to save recipe "{}"',
+    'GUI.RECIPE.LOG.RECIPE.EXPORTED': 'Exported recipe "{}"',
+    'GUI.RECIPE.LOG.RECIPE.EXPORTED.FAIL': 'Failed to export recipe "{}"',
     'GUI.MAIN.MENU.APPNAME': 'Recipes',
     'GUI.MAIN.MENU.ITEM.ABOUT': 'About',
     'GUI.MAIN.MENU.ITEM.QUIT': 'Quit',
@@ -92,6 +95,7 @@ _translations_en = {
     'GUI.MAIN.MENU.SETTINGS': 'Settings',
     'GUI.MAIN.MENU.ITEM.SETTINGS.SELECT_RECIPE_DIR': 'Select cookbook',
     'GUI.SELECT_RECIPE_DIR.DIALOG.SELECT': 'Select cookbook',
+    'GUI.SELECT_EXPORT_DIR.DIALOG.SELECT': 'Select export folder',
     'GUI.MAIN.WINDOW.TITLE': 'Recipes'
 }
 
@@ -150,6 +154,7 @@ _translations_de = {
     'GUI.RECIPE.VIEW.ACTIONS.STEPS.REMOVE': '-',
     'GUI.RECIPE.VIEW.ACTIONS.STEPS.ADD': '+',
     'GUI.RECIPE.VIEW.ACTIONS.CANCEL': 'Schließen',
+    'GUI.RECIPE.VIEW.ACTIONS.EXPORT': 'Exportieren',
     'GUI.RECIPE.VIEW.ACTIONS.SAVE': 'Speichern',
     'GUI.RECIPE.VIEW.ACTIONS.SAVE_CLOSE': 'Speichern und Schließen',
     'GUI.RECIPE.HEADERS.INGREDIENTS.QUANTITY': 'Anzahl',
@@ -165,6 +170,9 @@ _translations_de = {
     'GUI.RECIPE.MESSAGE_BOX.CLOSE.TEXT': 'Rezept wirklich ohne zu Speichern schließen?',
     'GUI.RECIPE.LOG.RECIPE.OPENED': 'Geöffnetes Rezept: "{}"',
     'GUI.RECIPE.LOG.RECIPE.SAVED': 'Rezept "{}" gespeichert',
+    'GUI.RECIPE.LOG.RECIPE.SAVED.FAIL': 'Rezept "{} konnte nicht gespeichert werden"',
+    'GUI.RECIPE.LOG.RECIPE.EXPORTED': 'Rezept "{}" exportiert',
+    'GUI.RECIPE.LOG.RECIPE.EXPORTED.FAIL': 'Rezept "{}" konnte nicht exportiert werden',
     'GUI.MAIN.MENU.APPNAME': 'Rezepte',
     'GUI.MAIN.MENU.ITEM.ABOUT': 'Über',
     'GUI.MAIN.MENU.ITEM.QUIT': 'Beenden',
@@ -174,6 +182,7 @@ _translations_de = {
     'GUI.MAIN.MENU.SETTINGS': 'Einstellungen',
     'GUI.MAIN.MENU.ITEM.SETTINGS.SELECT_RECIPE_DIR': 'Kochbuch auswählen',
     'GUI.SELECT_RECIPE_DIR.DIALOG.SELECT': 'Kochbuch auswählen',
+    'GUI.SELECT_EXPORT_DIR.DIALOG.SELECT': 'Export-Ordner auswählen',
     'GUI.MAIN.WINDOW.TITLE': 'Rezepte'
 }
 

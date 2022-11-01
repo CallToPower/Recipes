@@ -11,9 +11,11 @@
 import logging
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QCoreApplication
-from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QInputDialog, QLineEdit, QLabel, QWidget, QSizePolicy, QGridLayout, QHeaderView, QPushButton, QAbstractItemView, QMessageBox
+from PyQt5.QtCore import QCoreApplication, QUrl
+from PyQt5.QtGui import QFont, QDesktopServices
+from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFileDialog, QInputDialog, QLineEdit, QLabel, QWidget, QSizePolicy, QGridLayout, QHeaderView, QPushButton, QAbstractItemView, QMessageBox
+
+from fpdf import FPDF
 
 from lib.Utils import is_macos
 from i18n.I18n import I18n
@@ -25,6 +27,7 @@ from gui.components.model.StepsTableModel import StepsTableModel
 
 from lib.AppConfig import app_conf_get
 from lib.Utils import save_recipe
+from lib.RecipePDF import RecipePDF
 
 class RecipeWindow(QMainWindow):
     """Recipe window GUI"""
@@ -181,6 +184,8 @@ class RecipeWindow(QMainWindow):
 
         button_cancel = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.CANCEL', 'Cancel'))
         button_cancel.clicked[bool].connect(self._close)
+        button_export = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EXPORT', 'Export'))
+        button_export.clicked[bool].connect(self._export)
         button_save = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.SAVE', 'Save'))
         button_save.clicked[bool].connect(self._save)
         button_save_close = QPushButton(self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.SAVE_CLOSE', 'Save & Close'))
@@ -235,9 +240,10 @@ class RecipeWindow(QMainWindow):
 
         curr_gridid += 1
         layout_grid.setRowStretch(curr_gridid, 0)
-        layout_grid.addWidget(button_cancel, curr_gridid, 0, 1, 3)
-        layout_grid.addWidget(button_save, curr_gridid, 3, 1, 3)
-        layout_grid.addWidget(button_save_close, curr_gridid, 6, 1, 4)
+        layout_grid.addWidget(button_cancel, curr_gridid, 0, 1, 2)
+        layout_grid.addWidget(button_export, curr_gridid, 2, 1, 2)
+        layout_grid.addWidget(button_save, curr_gridid, 4, 1, 3)
+        layout_grid.addWidget(button_save_close, curr_gridid, 7, 1, 3)
 
         widget.setLayout(layout_grid)
 
@@ -438,6 +444,158 @@ class RecipeWindow(QMainWindow):
         if self.close_cb:
             self.close_cb(self.path_info)
         self.close()
+
+    def _export(self):
+        """Export recipe"""
+        logging.debug('Exporting')
+        selected, dirname = self._select_export_dir()
+        if selected:
+            try:
+                pdf = RecipePDF(orientation='P', unit='mm', format='A4')
+                pdf.set_recipe(self.recipe)
+                line_height_base = pdf.font_size * 2.5
+                pdf.add_page()
+                self._add_ingredients(pdf)
+                pdf.add_page()
+                self._restore(pdf)
+                pdf.ln(line_height_base)
+                self._add_steps(pdf)
+                self._restore(pdf)
+                pdf.ln(line_height_base)
+                self._add_information(pdf)
+                self._restore(pdf)
+                pdf.ln(line_height_base)
+                outputname = '{}/{}.pdf'.format(dirname, self.recipe.name)
+                logging.info('Saving pdf to "{}"'.format(outputname))
+                pdf.output(outputname)
+                self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE.EXPORTED').format(self.recipe.name))
+                self._open_export_folder(dirname)
+            except Exception as e:
+                logging.error('Failed to export recipe "{}" to "{}"'.format(self.recipe.name, dirname))
+                self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE.EXPORTED.FAIL').format(self.recipe.name))
+                logging.error(e)
+
+    def _restore(self, pdf):
+        """Restores color and font
+
+        :param pdf: The PDF
+        """
+        pdf.set_fill_color(224, 235, 255)
+        pdf.set_text_color(0)
+        pdf.set_font()
+
+    def _add_ingredients(self, pdf, col_widths=(30, 100, 60)):
+        """Adds the ingredients
+
+        :param pdf: The PDF
+        :param col_widths: The column widths
+        """
+        logging.info('Adding ingredients')
+        pdf.set_font('helvetica', size=14)
+        pdf.cell(txt=self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.INGREDIENTS', 'Zutaten'))
+        self._restore(pdf)
+        line_height_base = pdf.font_size * 2.5
+        pdf.ln(line_height_base)
+        pdf.set_font('helvetica', size=12)
+        pdf.set_fill_color(211,211,211)
+        pdf.set_line_width(0.3)
+        headings = [self.i18n.translate('GUI.RECIPE.HEADERS.INGREDIENTS.QUANTITY', 'Quantity'), self.i18n.translate('GUI.RECIPE.HEADERS.INGREDIENTS.NAME', 'Name'), self.i18n.translate('GUI.RECIPE.HEADERS.INGREDIENTS.ADDITION', 'Addition')]
+        for col_width, heading in zip(col_widths, headings):
+            pdf.cell(col_width, 7, heading, border=1, align="C")
+        pdf.ln()
+        fill = False
+        for i, ingredient in enumerate(self.recipe.ingredients):
+            t1 = self._get_none_safe(ingredient.quantity)
+            t2 = self._get_none_safe(ingredient.name)
+            t3 = self._get_none_safe(ingredient.addition)
+            test_split_1 = pdf.multi_cell(col_widths[0], line_height_base, t1, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
+            test_split_2 = pdf.multi_cell(col_widths[1], line_height_base, t2, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
+            test_split_3 = pdf.multi_cell(col_widths[2], line_height_base, t3, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
+            test_split_max = max(max(len(test_split_1), len(test_split_2)), len(test_split_3))
+            line_height = pdf.font_size + pdf.font_size * test_split_max
+            pdf.multi_cell(col_widths[0], line_height, t1, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
+            pdf.multi_cell(col_widths[1], line_height, t2, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
+            pdf.multi_cell(col_widths[2], line_height, t3, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
+            pdf.ln(line_height)
+            fill = not fill
+        pdf.cell(sum(col_widths), 0, '', border='T')
+
+    def _add_steps(self, pdf, col_widths=(10, 180)):
+        """Adds the steps
+
+        :param pdf: The PDF
+        :param col_widths: The column widths
+        """
+        logging.info('Adding steps')
+        pdf.set_font('helvetica', size=14)
+        pdf.cell(txt=self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.STEPS', 'Schritte'))
+        line_height_base = pdf.font_size * 2
+        self._restore(pdf)
+        pdf.ln(line_height_base)
+        pdf.set_font('helvetica', size=12)
+        pdf.set_fill_color(211,211,211)
+        pdf.set_line_width(0.3)
+        headings = ['#', '']
+        for col_width, heading in zip(col_widths, headings):
+            pdf.cell(col_width, 7, heading, border=1, align="C")
+        pdf.ln()
+        fill = False
+        for i, step in enumerate(self.recipe.steps):
+            step_text = self._get_none_safe(step)
+            test_split = pdf.multi_cell(col_widths[1], line_height_base, step_text, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
+            line_height = pdf.font_size + pdf.font_size * len(test_split)
+            pdf.multi_cell(col_widths[0], line_height, '{}'.format(i + 1), border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
+            pdf.multi_cell(col_widths[1], line_height, step_text, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
+            pdf.ln(line_height)
+            fill = not fill
+        pdf.cell(sum(col_widths), 0, '', border='T')
+
+    def _add_information(self, pdf):
+        """Adds the steps
+
+        :param pdf: The PDF
+        """
+        logging.info('Adding information')
+        pdf.set_font('helvetica', size=14)
+        pdf.cell(txt=self.i18n.translate('GUI.RECIPE.VIEW.HEADERS.INFO', 'Information'))
+        line_height_base = pdf.font_size * 2
+        self._restore(pdf)
+        pdf.ln(line_height_base)
+        pdf.set_font('helvetica', size=12)
+        text = self._get_none_safe(self.recipe.information)
+        test_split = pdf.multi_cell(190, line_height_base, text, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
+        line_height = pdf.font_size + pdf.font_size * len(test_split)
+        pdf.multi_cell(190, line_height, text, border=0, new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size)
+        pdf.ln(line_height)
+
+    def _get_none_safe(self, obj):
+        """Returns an empty string if none
+
+        :param obj: The object
+        """
+        return obj if obj else ''
+
+    def _select_export_dir(self):
+        """Selects the export directory"""
+        logging.info('Select export dir')
+
+        dirname = QFileDialog.getExistingDirectory(self, self.i18n.translate('GUI.SELECT_EXPORT_DIR.DIALOG.SELECT'), self.settings.recipe_folder, QFileDialog.ShowDirsOnly)
+        if dirname:
+            logging.info('Selected export directory: "{}"'.format(dirname))
+            return True, dirname
+        else:
+            logging.debug('Cancelled selecting output directory')
+            return False, ''
+
+    def _open_export_folder(self, folder):
+        """Opens the export folder in the native file explorer"""
+        logging.debug('Open export folder "{}"'.format(folder))
+        if folder:
+            if not QDesktopServices.openUrl(QUrl.fromLocalFile(folder)):
+                logging.error('Could not open export folder "{}" in native file explorer'.format(folder))
+        else:
+            logging.warn('Export folder not set')
+
 
     # @override
     def closeEvent(self, event):
