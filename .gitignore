@@ -4,7 +4,6 @@
 files/**
 /venv
 /target
-/resources
 /logs
 /build
 /dist
