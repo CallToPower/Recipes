@@ -67,6 +67,10 @@ class RecipeWindow(QMainWindow):
         if self.recipe.name:
             self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE.OPENED').format(self.recipe.name))
 
+        logo = self.image_cache.get_or_load_pixmap('img.logo_app', 'logo-app.png')
+        if logo is not None:
+            self.setWindowIcon(QIcon(logo))
+
         self._init_widgets()
 
         self.resize(app_conf_get('window.recipe.width'), app_conf_get('window.recipe.height'))
