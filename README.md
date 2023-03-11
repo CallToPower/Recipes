@@ -8,4 +8,8 @@ Copyright 2023 Denis Meyer
 
 ## Screenshots
 
-![Screenshot](resources/img/screenshot-1.png "Screenshot")
+Main window:  
+![Screenshot](resources/img/screenshot-1.png "Main window")
+
+Recipe window:  
+![Screenshot](resources/img/screenshot-2.png "Recipe window")
