@@ -12,7 +12,7 @@ import logging
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QCoreApplication, QUrl
-from PyQt5.QtGui import QFont, QDesktopServices
+from PyQt5.QtGui import QFont, QDesktopServices, QIcon
 from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFileDialog, QInputDialog, QLineEdit, QLabel, QWidget, QSizePolicy, QGridLayout, QHeaderView, QPushButton, QAbstractItemView, QMessageBox
 
 from fpdf import FPDF
@@ -32,10 +32,9 @@ from lib.RecipePDF import RecipePDF
 class RecipeWindow(QMainWindow):
     """Recipe window GUI"""
 
-    def __init__(self, settings, i18n, image_cache, path_info, recipe, close_cb):
+    def __init__(self, i18n, image_cache, path_info, recipe, close_cb):
         """Initializes the recipe window
 
-        :param settings: The settings
         :param i18n: The i18n
         :param image_cache: The image cache
         :param path_info: The path info
@@ -46,7 +45,6 @@ class RecipeWindow(QMainWindow):
 
         logging.debug('Initializing RecipeWindow')
 
-        self.settings = settings
         self.i18n = i18n
         self.image_cache = image_cache
         self.path_info = path_info
@@ -303,6 +301,9 @@ class RecipeWindow(QMainWindow):
         msg = self.i18n.translate('GUI.RECIPE.MESSAGE_BOX.CLOSE.TEXT')
         title = self.i18n.translate('GUI.RECIPE.MESSAGE_BOX.CLOSE')
         message_box = QMessageBox(QMessageBox.Information, title, msg, buttons=QMessageBox.Yes | QMessageBox.No)
+        logo = self.image_cache.get_or_load_pixmap('img.logo_app', 'logo-app.png')
+        if logo is not None:
+            message_box.setWindowIcon(QIcon(logo))
         message_box.exec_()
 
         return message_box.standardButton(message_box.clickedButton()) == QMessageBox.Yes
@@ -579,7 +580,7 @@ class RecipeWindow(QMainWindow):
         """Selects the export directory"""
         logging.info('Select export dir')
 
-        dirname = QFileDialog.getExistingDirectory(self, self.i18n.translate('GUI.SELECT_EXPORT_DIR.DIALOG.SELECT'), self.settings.recipe_folder, QFileDialog.ShowDirsOnly)
+        dirname = QFileDialog.getExistingDirectory(self, self.i18n.translate('GUI.SELECT_EXPORT_DIR.DIALOG.SELECT'), app_conf_get('recipes.folder'), QFileDialog.ShowDirsOnly)
         if dirname:
             logging.info('Selected export directory: "{}"'.format(dirname))
             return True, dirname

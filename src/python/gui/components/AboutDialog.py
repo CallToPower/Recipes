@@ -11,7 +11,7 @@
 import logging
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QDialog, QDesktopWidget, QGridLayout, QLabel
 
 from lib.AppConfig import app_conf_get
@@ -40,6 +40,10 @@ class AboutDialog(QDialog):
         logging.debug('Initializing AboutDialog GUI')
 
         self.setWindowTitle(self.i18n.translate('GUI.ABOUT.TITLE', 'About'))
+
+        logo = self.image_cache.get_or_load_pixmap('img.logo_app', 'logo-app.png')
+        if logo is not None:
+            self.setWindowIcon(QIcon(logo))
 
         self.resize(450, 250)
 
@@ -71,7 +75,7 @@ class AboutDialog(QDialog):
         self.label_build.setFont(self.font_label)
         self.label_build_val = QLabel(app_conf_get('build'))
 
-        logo = self.image_cache.get_or_load_pixmap('img.logo_app-de' if self.i18n.current_language == Language.DE else 'img.logo_app-en', 'logo-app-de.png' if self.i18n.current_language == Language.DE else 'logo-app-en.png')
+        logo = self.image_cache.get_or_load_pixmap('img.logo_app-{}'.format(self.i18n.language_main.lower()), 'logo-app-{}.png'.format(self.i18n.language_main.lower()))
         if logo is not None:
             self.label_img = QLabel()
             self.label_img.setPixmap(logo.scaled(app_conf_get('about.logo.scaled.width', 280), app_conf_get('about.logo.scaled.height', 80), Qt.KeepAspectRatio, Qt.SmoothTransformation))

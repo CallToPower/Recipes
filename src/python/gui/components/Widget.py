@@ -13,7 +13,7 @@ import os
 import shutil
 
 from PyQt5.QtCore import Qt, QSize, QUrl
-from PyQt5.QtGui import QFont, QIcon, QDesktopServices
+from PyQt5.QtGui import QFont, QIcon, QDesktopServices, QIcon
 from PyQt5.QtWidgets import QAbstractItemView, QMenu, QAction, QSizePolicy, QWidget, QGridLayout, QLabel, QTreeWidgetItem, QProgressBar, QPushButton, QMessageBox, QInputDialog, QLineEdit, QFileDialog, QDialog
 
 from gui.data.IconDefinitions import FOLDER, FILE, DELETE, EDIT, MOVE, CREATE_FOLDER, CREATE_FILE, OPEN_EXTERNAL
@@ -30,11 +30,10 @@ from lib.Utils import save_recipe
 class Widget(QWidget):
     """Widget"""
 
-    def __init__(self, i18n, settings, log, image_cache):
+    def __init__(self, i18n, log, image_cache):
         """Initializes the widget
 
         :param i18n: The I18n
-        :param settings: The settings
         :param log: The (end user) message log
         :param image_cache: The image cache
         """
@@ -43,7 +42,6 @@ class Widget(QWidget):
         logging.debug('Initializing Widget')
 
         self.i18n = i18n
-        self.settings = settings
         self.log = log
         self.image_cache = image_cache
         
@@ -51,7 +49,7 @@ class Widget(QWidget):
 
         self.components = []
         self.recipe_windows = {}
-        self.current_folder = self.settings.recipe_folder
+        self.current_folder = app_conf_get('recipes.folder')
 
     def init_ui(self):
         """Initiates application UI"""
@@ -130,9 +128,9 @@ class Widget(QWidget):
         self.progressbar.setTextVisible(False)
 
         try:
-            folder_name = os.path.basename(self.settings.recipe_folder)
+            folder_name = os.path.basename(app_conf_get('recipes.folder'))
         except:
-            folder_name = self.settings.recipe_folder
+            folder_name = app_conf_get('recipes.folder')
         label_current_folder = QLabel(self.i18n.translate('GUI.TREEVIEW.CURRENT_FOLDER').format(folder_name))
         label_current_folder.setFont(font_label_info) # font_label_text
         label_current_folder.setAlignment(Qt.AlignLeft)
@@ -176,10 +174,10 @@ class Widget(QWidget):
 
     def _open_recipe_folder(self):
         """Opens the recipe folder in the native file explorer"""
-        logging.debug('Open recipe folder "{}"'.format(self.settings.recipe_folder))
-        if self.settings.recipe_folder:
-            if not QDesktopServices.openUrl(QUrl.fromLocalFile(self.settings.recipe_folder)):
-                logging.error('Could not open recipe folder "{}" in native file explorer'.format(self.settings.recipe_folder))
+        logging.debug('Open recipe folder "{}"'.format(app_conf_get('recipes.folder')))
+        if app_conf_get('recipes.folder'):
+            if not QDesktopServices.openUrl(QUrl.fromLocalFile(app_conf_get('recipes.folder'))):
+                logging.error('Could not open recipe folder "{}" in native file explorer'.format(app_conf_get('recipes.folder')))
         else:
             logging.warn('Recipe folder not set, yet')
 
@@ -226,6 +224,9 @@ class Widget(QWidget):
         msg = self.i18n.translate('GUI.TREEVIEW.MESSAGE_BOX.DELETE.{}'.format('FILE' if is_file else 'DIRECTORY')).format(name)
         title = self.i18n.translate('GUI.TREEVIEW.MESSAGE_BOX.DELETE')
         message_box = QMessageBox(QMessageBox.Information, title, msg, buttons=QMessageBox.Yes | QMessageBox.No)
+        logo = self.image_cache.get_or_load_pixmap('img.logo_app', 'logo-app.png')
+        if logo is not None:
+            message_box.setWindowIcon(QIcon(logo))
         message_box.exec_()
 
         return message_box.standardButton(message_box.clickedButton()) == QMessageBox.Yes
@@ -264,7 +265,7 @@ class Widget(QWidget):
         if destination:
             destination_path_info = destination['path_info']
         else:
-            destination_path_info = self.settings.recipe_folder
+            destination_path_info = app_conf_get('recipes.folder')
         if os.path.isdir(destination_path_info):
             destination_folder = destination_path_info
         else:
@@ -496,7 +497,7 @@ class Widget(QWidget):
                     self.recipe_windows[path_info].activateWindow()
                 else:
                     logging.debug('Recipe window does not exist, creating new')
-                    recipe_window = RecipeWindow(self.settings, self.i18n, self.image_cache, path_info, json_recipe, self._recipe_window_closed)
+                    recipe_window = RecipeWindow(self.i18n, self.image_cache, path_info, json_recipe, self._recipe_window_closed)
                     self.recipe_windows[path_info] = recipe_window
                     recipe_window.init_ui()
                     recipe_window.show()
@@ -566,9 +567,9 @@ class Widget(QWidget):
     def _get_formatted_current_folder(self, show_slash=False):
         """Returns the formatted current folder
         :param show_slash: Whether to show slash for recipe folder"""
-        if show_slash and self.current_folder == self.settings.recipe_folder:
+        if show_slash and self.current_folder == app_conf_get('recipes.folder'):
             return '/'
-        return self.current_folder[len(self.settings.recipe_folder):]
+        return self.current_folder[len(app_conf_get('recipes.folder')):]
 
     def reset(self):
         """Resets the widget"""

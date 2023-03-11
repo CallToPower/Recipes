@@ -16,12 +16,25 @@ class ImageCache():
     """ImageCache"""
 
     _cache_pixmap = {
-        'img.logo_app': None
+        'img.logo_app': None,
+        'img.logo_app-de': None,
+        'img.logo_app-en': None
     }
 
     _cache_icon = {
         'img.flag.en': None,
-        'img.flag.de': None
+        'img.flag.de': None,
+        'img.icon.folder-regular': None,
+        'img.icon.file-solid': None,
+        'img.icon.select-recipe': None,
+        'img.icon.delete': None,
+        'img.icon.move': None,
+        'img.icon.create_folder': None,
+        'img.icon.create_recipe': None,
+        'img.icon.open': None,
+        'img.icon.edit': None,
+        'img.icon.about': None,
+        'img.icon.quit': None
     }
 
     def __init__(self, basedir):

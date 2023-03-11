@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Recipes"
-#define MyAppVersion "1.1"
+#define MyAppVersion "1.2"
 #define MyAppPublisher "CallToPower"
 #define MyAppURL "https://github.com/CallToPower/Recipes"
 #define MyAppExeName "Recipes.exe"
@@ -10,7 +10,7 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{E1206A2E-AC20-40FC-9EA8-FF317368C80F}
+AppId={{B8305F6F-A7C0-4019-9AC1-5B1E0D5C9A54}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -24,7 +24,7 @@ DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 OutputBaseFilename=Recipes-Setup
-SetupIconFile=C:\Users\ctp\Documents\GitHub\Recipes\src\icons\icon.ico
+SetupIconFile=C:\Users\ctp\Documents\GitHub\Recipes\src\icons\Icon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern

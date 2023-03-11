@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.2.0
+
+- Overhauled base folder organization
+- Added app icon to windows
+
 ## v1.1.0
 
 - Added PDF export

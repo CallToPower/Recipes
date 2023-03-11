@@ -11,26 +11,24 @@
 import logging
 
 from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFileDialog
 
 from lib.Utils import is_macos
-from i18n.I18n import I18n
 
-from gui.data.IconDefinitions import FLAG_DE, FLAG_EN, SELECT_RECIPE_DIR, ABOUT, QUIT
-from gui.enums.Language import Language
+from gui.data.IconDefinitions import SELECT_RECIPE_DIR, ABOUT, QUIT, get_flag
 from gui.components.Widget import Widget
 from gui.components.AboutDialog import AboutDialog
 
-from lib.AppConfig import app_conf_get
-
+from lib.Utils import save_conf
+from lib.AppConfig import app_conf_get, app_conf_set, get_public_values
 
 class MainWindow(QMainWindow):
     """Main window GUI"""
 
-    def __init__(self, settings, i18n, image_cache):
+    def __init__(self, i18n, image_cache):
         """Initializes the main window
 
-        :param settings: The settings
         :param i18n: The i18n
         :param image_cache: The image cache
         """
@@ -38,11 +36,8 @@ class MainWindow(QMainWindow):
 
         logging.debug('Initializing MainWindow')
 
-        self.settings = settings
         self.i18n = i18n
         self.image_cache = image_cache
-
-        self.state = None
 
     def init_ui(self):
         """Initiates application UI"""
@@ -53,11 +48,13 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(self.i18n.translate('GUI.MAIN.WINDOW.TITLE', 'Recipes'))
         self.statusbar = self.statusBar()
 
-        self.config = {}
+        logo = self.image_cache.get_or_load_pixmap('img.logo_app', 'logo-app.png')
+        if logo is not None:
+            self.setWindowIcon(QIcon(logo))
 
         self._init_widgets()
 
-        self.resize(self.settings.window['width'], self.settings.window['height'])
+        self.resize(app_conf_get('window.recipe.width', 800), app_conf_get('window.recipe.height', 600))
 
         self._center()
 
@@ -76,25 +73,15 @@ class MainWindow(QMainWindow):
         about.init_ui()
         about.exec_()
 
-    def _change_language_lang_de(self):
-        """Changes language to DE"""
-        logging.info('Change language to DE')
-        self._change_language(Language.DE)
-
-    def _change_language_lang_en(self):
-        """Changes language to EN"""
-        logging.info('Change language to EN')
-        self._change_language(Language.EN)
-
     def _select_recipe_dir(self):
         """Selects the recipe directory"""
         logging.info('Select recipe dir')
 
-        dirname = QFileDialog.getExistingDirectory(self, self.i18n.translate('GUI.SELECT_RECIPE_DIR.DIALOG.SELECT'), self.settings.recipe_folder, QFileDialog.ShowDirsOnly)
+        dirname = QFileDialog.getExistingDirectory(self, self.i18n.translate('GUI.SELECT_RECIPE_DIR.DIALOG.SELECT'), app_conf_get('recipes.folder'), QFileDialog.ShowDirsOnly)
         if dirname:
             logging.info('Selected recipe directory: "{}"'.format(dirname))
-            self.settings.recipe_folder = dirname
-            self.settings.save()
+            app_conf_set('recipes.folder', dirname)
+            save_conf(get_public_values())
 
             self._reset_phases()
             self._init_menu()
@@ -132,22 +119,16 @@ class MainWindow(QMainWindow):
         menu_application.addAction(action_about)
         menu_application.addAction(action_quit)
 
-        menu_language = menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.LANGUAGE', 'Language'))
+        if len(self.i18n.languages) > 1:
+            menu_language = menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.LANGUAGE', 'Language'))
 
-        action_lang_de = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.LANGUAGE.DE', 'Deutsch'), self)
-        action_lang_de.setShortcut('Ctrl+1')
-        action_lang_de.triggered.connect(self._change_language_lang_de)
-        icon = self.image_cache.get_or_load_icon(FLAG_DE)
-        action_lang_de.setIcon(icon)
-
-        action_lang_en = QAction(self.i18n.translate('GUI.MAIN.MENU.ITEM.LANGUAGE.EN', 'English'), self)
-        action_lang_en.setShortcut('Ctrl+2')
-        action_lang_en.triggered.connect(self._change_language_lang_en)
-        icon = self.image_cache.get_or_load_icon(FLAG_EN)
-        action_lang_en.setIcon(icon)
-
-        menu_language.addAction(action_lang_de)
-        menu_language.addAction(action_lang_en)
+            for lang in self.i18n.languages:
+                action = QAction(lang, self)
+                flag = self.image_cache.get_or_load_icon(get_flag(lang))
+                if flag:
+                    action.setIcon(flag)
+                action.triggered.connect(self._action_change_language)
+                menu_language.addAction(action)
 
         menu_settings = menu_bar.addMenu(self.i18n.translate('GUI.MAIN.MENU.SETTINGS', 'Settings'))
 
@@ -165,14 +146,20 @@ class MainWindow(QMainWindow):
         self.move(int((screen.width() - self.geometry().width()) / 2),
                   int((screen.height() - self.geometry().height()) / 2))
 
+    def _action_change_language(self):
+        self._change_language(self.sender().text())
+
     def _change_language(self, lang):
         """Changes the language
 
         :param lang: The language
         """
-        logging.info('Changing language to {}'.format(lang))
+        if lang == self.i18n.language_main:
+            return
+
         self.i18n.change_language(lang)
-        self.settings.save()
+        app_conf_set('language.main', lang)
+        save_conf(get_public_values())
 
         self._reset_phases()
         self.setWindowTitle(self.i18n.translate('GUI.MAIN.WINDOW.TITLE'))
@@ -185,8 +172,6 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(None)
 
-        self.config = {}
-
         self._init_widgets()
 
     def _init_widgets(self):
@@ -194,7 +179,6 @@ class MainWindow(QMainWindow):
         logging.info('Initializing widgets')
 
         widget = Widget(i18n=self.i18n,
-                        settings=self.settings,
                         log=self.show_message,
                         image_cache=self.image_cache)
         widget.init_ui()

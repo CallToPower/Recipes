@@ -1,211 +1,49 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright 2022 Denis Meyer
+# Copyright 2019-2022 Denis Meyer
 #
-# This file is part of Rezepte.
+# This file is part of ImageScaler.
 #
 
 """The I18n"""
 
+import os
 import logging
+import json
 
-from gui.enums.Language import Language
-
-_translations_en = {
-    'GUI.ABOUT.LABEL.AUTHOR': 'Author',
-    'GUI.ABOUT.LABEL.COPYRIGHT': 'Copyright',
-    'GUI.ABOUT.LABEL.VERSION': 'Version',
-    'GUI.ABOUT.LABEL.BUILD': 'Build',
-    'GUI.ABOUT.TITLE': 'About Recipes',
-    'GUI.MAIN.LOG.TREEVIEW': 'Welcome!',
-    'GUI.TREEVIEW.HEADER': 'Recipes',
-    'GUI.TREEVIEW.CURRENT_FOLDER': 'Cookbook: {}',
-    'GUI.TREEVIEW.LOG.LOAD_COOKBOOK.START': 'Loading cookbook',
-    'GUI.TREEVIEW.LOG.LOAD_COOKBOOK.DONE': 'Cookbook loaded',
-    'GUI.TREEVIEW.LOG.DELETE_DIRECTORY': 'Deleted directory "{}"',
-    'GUI.TREEVIEW.LOG.DELETE_DIRECTORY.FAIL': 'Could not delete directory "{}"',
-    'GUI.TREEVIEW.LOG.DELETE_FILE': 'Deleted recipe "{}"',
-    'GUI.TREEVIEW.LOG.DELETE_FILE.FAIL': 'Could not delete recipe "{}"',
-    'GUI.TREEVIEW.LOG.MOVE_DIRECTORY': 'Moved directory "{}" to "{}"',
-    'GUI.TREEVIEW.LOG.MOVE_DIRECTORY.FAIL': 'Failed to move directory "{}" to "{}"',
-    'GUI.TREEVIEW.LOG.MOVE_FILE': 'Moved recipe "{}" to "{}"',
-    'GUI.TREEVIEW.LOG.MOVE_FILE.FAIL': 'Failed to move recipe "{}" to "{}"',
-    'GUI.TREEVIEW.MESSAGE_BOX.SELECT_FOLDER': 'Select folder',
-    'GUI.TREEVIEW.MESSAGE_BOX.DELETE': 'Delete',
-    'GUI.TREEVIEW.MESSAGE_BOX.DELETE.DIRECTORY': 'Do you really want to delete the directory "{}"?',
-    'GUI.TREEVIEW.MESSAGE_BOX.DELETE.FILE': 'Do you really want to delete the recipe "{}"?',
-    'GUI.TREEVIEW.ACTIONS.NEW_FOLDER': 'New Folder',
-    'GUI.TREEVIEW.ACTIONS.NEW_FOLDER.TEXT': 'Name of the new folder:',
-    'GUI.TREEVIEW.LOG.CREATE_FOLDER.SUCCESS': 'Created new folder "{}"',
-    'GUI.TREEVIEW.LOG.CREATE_FOLDER.FAIL.EXISTS': 'The folder "{}" already exists',
-    'GUI.TREEVIEW.ACTIONS.NEW_FILE': 'New Recipe',
-    'GUI.TREEVIEW.ACTIONS.NEW_FILE.TEXT': 'Name of the new recipe:',
-    'GUI.TREEVIEW.LOG.CREATE_FILE.SUCCESS': 'Created new recipe "{}"',
-    'GUI.TREEVIEW.LOG.CREATE_FILE.FAIL.EXISTS': 'The recipe "{}" already exists',
-    'GUI.TREEVIEW.ACTIONS.EDIT_FOLDER': 'Rename folder',
-    'GUI.TREEVIEW.ACTIONS.EDIT_FOLDER.TEXT': 'New name of the folder:',
-    'GUI.TREEVIEW.LOG.EDIT_FOLDER.SUCCESS': 'Folder "{}" has been renamed',
-    'GUI.TREEVIEW.LOG.EDIT_FOLDER.FAIL.EXISTS': 'The folder "{}" already exists',
-    'GUI.TREEVIEW.ACTIONS.EDIT_FILE': 'Rename recipe',
-    'GUI.TREEVIEW.ACTIONS.EDIT_FILE.TEXT': 'New name of the recipe:',
-    'GUI.TREEVIEW.LOG.EDIT_FILE.SUCCESS': 'Recipe "{}" has been renamed',
-    'GUI.TREEVIEW.LOG.EDIT_FILE.FAIL.EXISTS': 'The recipe "{}" already exists',
-    'GUI.TREEVIEW.MENU.RIGHTCLICK.DELETE': 'Delete',
-    'GUI.TREEVIEW.MENU.RIGHTCLICK.EDIT': 'Edit',
-    'GUI.TREEVIEW.MENU.RIGHTCLICK.MOVE': 'Move',
-    'GUI.TREEVIEW.MENU.RIGHTCLICK.CREATE_FOLDER': 'Create Folder',
-    'GUI.TREEVIEW.MENU.RIGHTCLICK.CREATE_FILE': 'Create File',
-    'GUI.RECIPE.MENU.RECIPE.NAME': 'Recipe',
-    'GUI.RECIPE.MENU.ITEM.CLOSE': 'Close',
-    'GUI.RECIPE.VIEW.EMPTY_WINDOW_TITLE': 'Unnamed Recipe',
-    'GUI.RECIPE.VIEW.HEADERS.INGREDIENTS': 'Ingredients',
-    'GUI.RECIPE.VIEW.HEADERS.STEPS': 'Steps',
-    'GUI.RECIPE.VIEW.HEADERS.INFO': 'Information',
-    'GUI.RECIPE.VIEW.ACTIONS.INGREDIENTS.REMOVE': '-',
-    'GUI.RECIPE.VIEW.ACTIONS.INGREDIENTS.ADD': '+',
-    'GUI.RECIPE.VIEW.ACTIONS.STEPS.REMOVE': '-',
-    'GUI.RECIPE.VIEW.ACTIONS.STEPS.ADD': '+',
-    'GUI.RECIPE.VIEW.ACTIONS.CANCEL': 'Close',
-    'GUI.RECIPE.VIEW.ACTIONS.EXPORT': 'Export',
-    'GUI.RECIPE.VIEW.ACTIONS.SAVE': 'Save',
-    'GUI.RECIPE.VIEW.ACTIONS.SAVE_CLOSE': 'Save and Close',
-    'GUI.RECIPE.HEADERS.INGREDIENTS.QUANTITY': 'Quantity',
-    'GUI.RECIPE.HEADERS.INGREDIENTS.NAME': 'Name',
-    'GUI.RECIPE.HEADERS.INGREDIENTS.ADDITION': 'Further Information',
-    'GUI.RECIPE.HEADERS.INFO.NAME': 'Name',
-    'GUI.RECIPE.HEADERS.INFO.URL': 'URL',
-    'GUI.RECIPE.VIEW.ACTIONS.EDIT_RECIPE_NAME': 'Recipe Name',
-    'GUI.RECIPE.VIEW.ACTIONS.EDIT_RECIPE_NAME.TEXT': 'New recipe name:',
-    'GUI.RECIPE.VIEW.ACTIONS.EDIT_INFORMATION': 'Information',
-    'GUI.RECIPE.VIEW.ACTIONS.EDIT_INFORMATION.TEXT': 'New information:',
-    'GUI.RECIPE.MESSAGE_BOX.CLOSE': 'CLose recipe',
-    'GUI.RECIPE.MESSAGE_BOX.CLOSE.TEXT': 'Do you really wand to close the recipe without saving?',
-    'GUI.RECIPE.LOG.RECIPE.OPENED': 'Opened recipe: "{}"',
-    'GUI.RECIPE.LOG.RECIPE.SAVED': 'Saved recipe "{}"',
-    'GUI.RECIPE.LOG.RECIPE.SAVED.FAIL': 'Failed to save recipe "{}"',
-    'GUI.RECIPE.LOG.RECIPE.EXPORTED': 'Exported recipe "{}"',
-    'GUI.RECIPE.LOG.RECIPE.EXPORTED.FAIL': 'Failed to export recipe "{}"',
-    'GUI.MAIN.MENU.APPNAME': 'Recipes',
-    'GUI.MAIN.MENU.ITEM.ABOUT': 'About',
-    'GUI.MAIN.MENU.ITEM.QUIT': 'Quit',
-    'GUI.MAIN.MENU.LANGUAGE': 'Language',
-    'GUI.MAIN.MENU.ITEM.LANGUAGE.DE': 'German',
-    'GUI.MAIN.MENU.ITEM.LANGUAGE.EN': 'English',
-    'GUI.MAIN.MENU.SETTINGS': 'Settings',
-    'GUI.MAIN.MENU.ITEM.SETTINGS.SELECT_RECIPE_DIR': 'Select cookbook',
-    'GUI.SELECT_RECIPE_DIR.DIALOG.SELECT': 'Select cookbook',
-    'GUI.SELECT_EXPORT_DIR.DIALOG.SELECT': 'Select export folder',
-    'GUI.MAIN.WINDOW.TITLE': 'Recipes'
-}
-
-_translations_de = {
-    'GUI.ABOUT.LABEL.AUTHOR': 'Autor',
-    'GUI.ABOUT.LABEL.COPYRIGHT': 'Copyright',
-    'GUI.ABOUT.LABEL.VERSION': 'Version',
-    'GUI.ABOUT.LABEL.BUILD': 'Build',
-    'GUI.ABOUT.TITLE': 'Über Rezepte',
-    'GUI.MAIN.LOG.TREEVIEW': 'Willkommen!',
-    'GUI.TREEVIEW.HEADER': 'Rezepte',
-    'GUI.TREEVIEW.CURRENT_FOLDER': 'Kochbuch: {}',
-    'GUI.TREEVIEW.LOG.LOAD_COOKBOOK.START': 'Kochbuch lädt',
-    'GUI.TREEVIEW.LOG.LOAD_COOKBOOK.DONE': 'Kochbuch geladen',
-    'GUI.TREEVIEW.LOG.DELETE_DIRECTORY': 'Ordner "{}" gelöscht',
-    'GUI.TREEVIEW.LOG.DELETE_DIRECTORY.FAIL': 'Ordner "{}" konnte nicht gelöscht werden',
-    'GUI.TREEVIEW.LOG.DELETE_FILE': 'Rezept "{}" gelöscht',
-    'GUI.TREEVIEW.LOG.DELETE_FILE.FAIL': 'Rezept "{}" konnte nicht gelöscht werden',
-    'GUI.TREEVIEW.LOG.MOVE_DIRECTORY': 'Ordner "{}" nach "{}" verschoben',
-    'GUI.TREEVIEW.LOG.MOVE_DIRECTORY.FAIL': 'Ordner "{}" konnte nicht nach "{}" verschoben werden',
-    'GUI.TREEVIEW.LOG.MOVE_FILE': 'Rezept "{}" nach "{}" verschoben',
-    'GUI.TREEVIEW.LOG.MOVE_FILE.FAIL': 'Rezept "{}" konnte nicht nach "{}" verschoben werden',
-    'GUI.TREEVIEW.MESSAGE_BOX.SELECT_FOLDER': 'Ordner auswählen',
-    'GUI.TREEVIEW.MESSAGE_BOX.DELETE': 'Löschen',
-    'GUI.TREEVIEW.MESSAGE_BOX.DELETE.DIRECTORY': 'Soll der Ordner "{}" wirklich gelöscht werden?',
-    'GUI.TREEVIEW.MESSAGE_BOX.DELETE.FILE': 'Soll das Rezept "{}" wirklich gelöscht werden?',
-    'GUI.TREEVIEW.ACTIONS.NEW_FOLDER': 'Neuer Ordner',
-    'GUI.TREEVIEW.ACTIONS.NEW_FOLDER.TEXT': 'Name des neuen Ordners:',
-    'GUI.TREEVIEW.LOG.CREATE_FOLDER.SUCCESS': 'Neuer Ordner "{}" wurde angelegt',
-    'GUI.TREEVIEW.LOG.CREATE_FOLDER.FAIL.EXISTS': 'Der Ordner "{}" existiert bereits',
-    'GUI.TREEVIEW.ACTIONS.NEW_FILE': 'Neues Rezept',
-    'GUI.TREEVIEW.ACTIONS.NEW_FILE.TEXT': 'Name des neuen Rezeptes:',
-    'GUI.TREEVIEW.LOG.CREATE_FILE.SUCCESS': 'Neues Rezept "{}" wurde angelegt',
-    'GUI.TREEVIEW.LOG.CREATE_FILE.FAIL.EXISTS': 'Das Rezept "{}" existiert bereits',
-    'GUI.TREEVIEW.ACTIONS.EDIT_FOLDER': 'Ordner umbenennen',
-    'GUI.TREEVIEW.ACTIONS.EDIT_FOLDER.TEXT': 'Neuer Name des Ordners:',
-    'GUI.TREEVIEW.LOG.EDIT_FOLDER.SUCCESS': 'Ordner "{}" wurde in "{}" umbenannt',
-    'GUI.TREEVIEW.LOG.EDIT_FOLDER.FAIL.EXISTS': 'Der Ordner "{}" existiert bereits',
-    'GUI.TREEVIEW.ACTIONS.EDIT_FILE': 'Rezept umbenennen',
-    'GUI.TREEVIEW.ACTIONS.EDIT_FILE.TEXT': 'Neuer Name des Rezeptes:',
-    'GUI.TREEVIEW.LOG.EDIT_FILE.SUCCESS': 'Rezept "{}" wurde in "{}" umbenannt',
-    'GUI.TREEVIEW.LOG.EDIT_FILE.FAIL.EXISTS': 'Das Rezept "{}" existiert bereits',
-    'GUI.TREEVIEW.MENU.RIGHTCLICK.DELETE': 'Löschen',
-    'GUI.TREEVIEW.MENU.RIGHTCLICK.EDIT': 'Umbenennen',
-    'GUI.TREEVIEW.MENU.RIGHTCLICK.MOVE': 'Verschieben',
-    'GUI.TREEVIEW.MENU.RIGHTCLICK.CREATE_FOLDER': 'Ordner anlegen',
-    'GUI.TREEVIEW.MENU.RIGHTCLICK.CREATE_FILE': 'Rezept anlegen',
-    'GUI.RECIPE.MENU.RECIPE.NAME': 'Rezept',
-    'GUI.RECIPE.MENU.ITEM.CLOSE': 'Schließen',
-    'GUI.RECIPE.VIEW.EMPTY_WINDOW_TITLE': 'Namenloses Rezept',
-    'GUI.RECIPE.VIEW.HEADERS.INGREDIENTS': 'Zutaten',
-    'GUI.RECIPE.VIEW.HEADERS.STEPS': 'Schritte',
-    'GUI.RECIPE.VIEW.HEADERS.INFO': 'Information',
-    'GUI.RECIPE.VIEW.ACTIONS.INGREDIENTS.REMOVE': '-',
-    'GUI.RECIPE.VIEW.ACTIONS.INGREDIENTS.ADD': '+',
-    'GUI.RECIPE.VIEW.ACTIONS.STEPS.REMOVE': '-',
-    'GUI.RECIPE.VIEW.ACTIONS.STEPS.ADD': '+',
-    'GUI.RECIPE.VIEW.ACTIONS.CANCEL': 'Schließen',
-    'GUI.RECIPE.VIEW.ACTIONS.EXPORT': 'Exportieren',
-    'GUI.RECIPE.VIEW.ACTIONS.SAVE': 'Speichern',
-    'GUI.RECIPE.VIEW.ACTIONS.SAVE_CLOSE': 'Speichern und Schließen',
-    'GUI.RECIPE.HEADERS.INGREDIENTS.QUANTITY': 'Anzahl',
-    'GUI.RECIPE.HEADERS.INGREDIENTS.NAME': 'Name',
-    'GUI.RECIPE.HEADERS.INGREDIENTS.ADDITION': 'Weitere Angaben',
-    'GUI.RECIPE.HEADERS.INFO.NAME': 'Name',
-    'GUI.RECIPE.HEADERS.INFO.URL': 'URL',
-    'GUI.RECIPE.VIEW.ACTIONS.EDIT_RECIPE_NAME': 'Rezeptname',
-    'GUI.RECIPE.VIEW.ACTIONS.EDIT_RECIPE_NAME.TEXT': 'Neuer Rezeptname:',
-    'GUI.RECIPE.VIEW.ACTIONS.EDIT_INFORMATION': 'Informationen',
-    'GUI.RECIPE.VIEW.ACTIONS.EDIT_INFORMATION.TEXT': 'Neue Informationen:',
-    'GUI.RECIPE.MESSAGE_BOX.CLOSE': 'Rezept schließen',
-    'GUI.RECIPE.MESSAGE_BOX.CLOSE.TEXT': 'Rezept wirklich ohne zu Speichern schließen?',
-    'GUI.RECIPE.LOG.RECIPE.OPENED': 'Geöffnetes Rezept: "{}"',
-    'GUI.RECIPE.LOG.RECIPE.SAVED': 'Rezept "{}" gespeichert',
-    'GUI.RECIPE.LOG.RECIPE.SAVED.FAIL': 'Rezept "{} konnte nicht gespeichert werden"',
-    'GUI.RECIPE.LOG.RECIPE.EXPORTED': 'Rezept "{}" exportiert',
-    'GUI.RECIPE.LOG.RECIPE.EXPORTED.FAIL': 'Rezept "{}" konnte nicht exportiert werden',
-    'GUI.MAIN.MENU.APPNAME': 'Rezepte',
-    'GUI.MAIN.MENU.ITEM.ABOUT': 'Über',
-    'GUI.MAIN.MENU.ITEM.QUIT': 'Beenden',
-    'GUI.MAIN.MENU.LANGUAGE': 'Sprache',
-    'GUI.MAIN.MENU.ITEM.LANGUAGE.DE': 'Deutsch',
-    'GUI.MAIN.MENU.ITEM.LANGUAGE.EN': 'Englisch',
-    'GUI.MAIN.MENU.SETTINGS': 'Einstellungen',
-    'GUI.MAIN.MENU.ITEM.SETTINGS.SELECT_RECIPE_DIR': 'Kochbuch auswählen',
-    'GUI.SELECT_RECIPE_DIR.DIALOG.SELECT': 'Kochbuch auswählen',
-    'GUI.SELECT_EXPORT_DIR.DIALOG.SELECT': 'Export-Ordner auswählen',
-    'GUI.MAIN.WINDOW.TITLE': 'Rezepte'
-}
+from lib.Utils import load_languages, load_i18n
 
 class I18n():
     """I18n"""
 
-    def __init__(self, lang=Language.EN):
+    def __init__(self, basedir, lang='en'):
         """Initializing Translations
 
+        :param basedir: The base directory
         :param lang: Default language
         """
-        self.current_language = lang
-        self._translations = None
+        self.basedir = basedir
 
-        self.set_lang()
+        self.languages = load_languages(self.basedir)
+        self.language_main = lang
+        self._translations = {}
 
-    def set_lang(self):
-        """Sets the language"""
-        logging.debug('Setting language to {}'.format(self.current_language))
-        if self.current_language == Language.EN:
-            self._translations = _translations_en
-        else:
-            self._translations = _translations_de
+        self._init()
+
+    def _init(self):
+        """Initializes the translations"""
+        if not self.language_main in self.languages:
+            logging.warn('Language "{}" not found, falling back to "{}"'.format(self.language_main, self.languages[0]))
+            self.language_main = self.languages[0]
+        lang = self.languages[self.languages.index(self.language_main)]
+        self._load_language(lang)
+
+    def _load_language(self, lang):
+        """Loads a language"""
+        translations = load_i18n(self.basedir, lang)
+        for key, val in translations.items():
+            self._translations[key] = val
 
     def change_language(self, lang):
         """Changes the language
@@ -213,12 +51,8 @@ class I18n():
         :param lang: The language
         """
         logging.info('Changing language to {}'.format(lang))
-        if lang == Language.EN:
-            self.current_language = Language.EN
-        else:
-            self.current_language = Language.DE
-
-        self.set_lang()
+        self.language_main = lang
+        self._init()
 
     def translate(self, key, default=''):
         """Returns the value for the given key or - if not found - a default value
@@ -229,5 +63,5 @@ class I18n():
         try:
             return self._translations[key]
         except KeyError as exception:
-            logging.warn('Returning default for key "{}": "{}"'.format(key, exception))
+            logging.error('Returning default for key "{}": "{}"'.format(key, exception))
             return default
