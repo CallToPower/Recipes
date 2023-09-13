@@ -9,13 +9,13 @@
 """Recipe window"""
 
 import logging
+import re
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QCoreApplication, QUrl
 from PyQt5.QtGui import QFont, QDesktopServices, QIcon
 from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFileDialog, QInputDialog, QLineEdit, QLabel, QWidget, QSizePolicy, QGridLayout, QHeaderView, QPushButton, QAbstractItemView, QMessageBox
 
-from lib.Utils import is_macos
 from gui.data.IconDefinitions import EDIT, QUIT
 from gui.components.view.IngredientsTableView import IngredientsTableView
 from gui.components.view.StepsTableView import StepsTableView
@@ -23,7 +23,7 @@ from gui.components.model.IngredientsTableModel import IngredientsTableModel
 from gui.components.model.StepsTableModel import StepsTableModel
 
 from lib.AppConfig import app_conf_get
-from lib.Utils import save_recipe
+from lib.Utils import save_recipe, is_macos
 from lib.RecipePDF import RecipePDF
 
 class RecipeWindow(QMainWindow):
@@ -484,14 +484,7 @@ class RecipeWindow(QMainWindow):
                 logging.error(e)
 
     def _clean_recipe_name(self, rname):
-        dict_replace = {
-            '/': '-',
-            '\\': '-'
-        }
-        val = rname
-        for k, v in dict_replace.items():
-            val = val.replace(k, v)
-        return val
+        return re.sub('\W+', '-', rname)
 
     def _restore(self, pdf):
         """Restores color and font
