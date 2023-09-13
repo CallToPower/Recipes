@@ -14,8 +14,8 @@ from pathlib import Path
 
 _app_config = {
     'author': 'Denis Meyer',
-    'version': '1.2.0',
-    'build': '2023-03-11-1',
+    'version': '1.2.1',
+    'build': '2023-09-13-1',
     'copyright': '© 2022-2023 Denis Meyer',
     'conf.folder': 'Recipes',
     'conf.name': 'conf.json',

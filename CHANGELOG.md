@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.2.1
+
+- Fixed saving recipes with a special name
+- Updated dependency versions
+
 ## v1.2.0
 
 - Overhauled base folder organization

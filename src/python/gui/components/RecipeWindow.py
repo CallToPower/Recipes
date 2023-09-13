@@ -15,10 +15,7 @@ from PyQt5.QtCore import QCoreApplication, QUrl
 from PyQt5.QtGui import QFont, QDesktopServices, QIcon
 from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFileDialog, QInputDialog, QLineEdit, QLabel, QWidget, QSizePolicy, QGridLayout, QHeaderView, QPushButton, QAbstractItemView, QMessageBox
 
-from fpdf import FPDF
-
 from lib.Utils import is_macos
-from i18n.I18n import I18n
 from gui.data.IconDefinitions import EDIT, QUIT
 from gui.components.view.IngredientsTableView import IngredientsTableView
 from gui.components.view.StepsTableView import StepsTableView
@@ -50,7 +47,14 @@ class RecipeWindow(QMainWindow):
         self.path_info = path_info
         self.recipe = recipe
         self.close_cb = close_cb
-        
+
+        self.menu_bar = None
+        self.statusbar = None
+        self.label_header = None
+        self.table_steps = None
+        self.model_steps = None
+        self.label_info_text = None
+
         self._changed = False
 
     def init_ui(self):
@@ -115,7 +119,6 @@ class RecipeWindow(QMainWindow):
         font_label_text.setPointSize(app_conf_get('label.text.font.size', 10))
 
         line_css = 'background-color: #c0c0c0;'
-        bgcolor_header_css = 'background-color: rgb(230, 230, 230);'
 
         # Components
 
@@ -470,7 +473,7 @@ class RecipeWindow(QMainWindow):
                 self._add_information(pdf)
                 self._restore(pdf)
                 pdf.ln(line_height_base)
-                outputname = '{}/{}.pdf'.format(dirname, self.recipe.name)
+                outputname = '{}/{}.pdf'.format(dirname, self._clean_recipe_name(self.recipe.name))
                 logging.info('Saving pdf to "{}"'.format(outputname))
                 pdf.output(outputname)
                 self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE.EXPORTED').format(self.recipe.name))
@@ -479,6 +482,16 @@ class RecipeWindow(QMainWindow):
                 logging.error('Failed to export recipe "{}" to "{}"'.format(self.recipe.name, dirname))
                 self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE.EXPORTED.FAIL').format(self.recipe.name))
                 logging.error(e)
+
+    def _clean_recipe_name(self, rname):
+        dict_replace = {
+            '/': '-',
+            '\\': '-'
+        }
+        val = rname
+        for k, v in dict_replace.items():
+            val = val.replace(k, v)
+        return val
 
     def _restore(self, pdf):
         """Restores color and font
@@ -509,14 +522,14 @@ class RecipeWindow(QMainWindow):
             pdf.cell(col_width, 7, heading, border=1, align="C")
         pdf.ln()
         fill = False
-        for i, ingredient in enumerate(self.recipe.ingredients):
+        for _i, ingredient in enumerate(self.recipe.ingredients):
             t1 = self._get_none_safe(ingredient.quantity)
             t2 = self._get_none_safe(ingredient.name)
             t3 = self._get_none_safe(ingredient.addition)
             test_split_1 = pdf.multi_cell(col_widths[0], line_height_base, t1, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
             test_split_2 = pdf.multi_cell(col_widths[1], line_height_base, t2, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
             test_split_3 = pdf.multi_cell(col_widths[2], line_height_base, t3, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
-            test_split_max = max(max(len(test_split_1), len(test_split_2)), len(test_split_3))
+            test_split_max = max(len(test_split_1), len(test_split_2), len(test_split_3))
             line_height = pdf.font_size + pdf.font_size * test_split_max
             pdf.multi_cell(col_widths[0], line_height, t1, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
             pdf.multi_cell(col_widths[1], line_height, t2, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
