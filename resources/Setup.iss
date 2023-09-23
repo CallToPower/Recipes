@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Recipes"
-#define MyAppVersion "1.2.1"
+#define MyAppVersion "1.3.0"
 #define MyAppPublisher "CallToPower"
 #define MyAppURL "https://github.com/CallToPower/Recipes"
 #define MyAppExeName "Recipes.exe"
