@@ -14,13 +14,11 @@ from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QMenuBar, QAction, QFileDialog
 
-from lib.Utils import is_macos
-
 from gui.data.IconDefinitions import SELECT_RECIPE_DIR, ABOUT, QUIT, get_flag
 from gui.components.Widget import Widget
 from gui.components.AboutDialog import AboutDialog
-
-from lib.Utils import save_conf
+ 
+from lib.Utils import is_macos, save_conf
 from lib.AppConfig import app_conf_get, app_conf_set, get_public_values
 
 class MainWindow(QMainWindow):
@@ -32,12 +30,14 @@ class MainWindow(QMainWindow):
         :param i18n: The i18n
         :param image_cache: The image cache
         """
-        super().__init__()
+        super(MainWindow, self).__init__()
 
         logging.debug('Initializing MainWindow')
 
         self.i18n = i18n
         self.image_cache = image_cache
+
+        self.statusbar = None
 
     def init_ui(self):
         """Initiates application UI"""
@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
 
         dirname = QFileDialog.getExistingDirectory(self, self.i18n.translate('GUI.SELECT_RECIPE_DIR.DIALOG.SELECT'), app_conf_get('recipes.folder'), QFileDialog.ShowDirsOnly)
         if dirname:
-            logging.info('Selected recipe directory: "{}"'.format(dirname))
+            logging.info('Selected recipe directory: "%s"', dirname)
             app_conf_set('recipes.folder', dirname)
             save_conf(get_public_values())
 

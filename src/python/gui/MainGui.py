@@ -6,7 +6,7 @@
 # This file is part of Rezepte.
 #
 
-"""GUI"""
+"""Main GUI"""
 
 import logging
 import sys
@@ -14,9 +14,9 @@ import sys
 from PyQt5 import QtWidgets
 
 from i18n.I18n import I18n
-from lib.ImageCache import ImageCache
 from gui.components.MainWindow import MainWindow
 
+from lib.ImageCache import ImageCache
 from lib.Utils import _load_conf_from_home_folder, save_conf, update_logging, verify_recipes_dir
 from lib.AppConfig import app_conf_get, app_conf_set, get_public_values
 
@@ -31,6 +31,7 @@ class MainGUI():
         logging.debug('Initializing MainGUI')
 
         self.basedir = basedir
+        self.main_window = None
 
         self._init()
 
@@ -39,9 +40,9 @@ class MainGUI():
         conf_loaded, conf = _load_conf_from_home_folder()
 
         if conf_loaded:
-            for k, v in conf.items():
-                logging.debug('Overwriting config entry "{}": "{}"'.format(k, v))
-                app_conf_set(k, v)
+            for key, val in conf.items():
+                logging.debug('Overwriting config entry "%s": "%s"', key, val)
+                app_conf_set(key, val)
         else:
             save_conf(get_public_values())
 

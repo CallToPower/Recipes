@@ -11,7 +11,6 @@
 import logging
 
 from PyQt5.QtCore import Qt
-from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QTreeWidget
 
 
@@ -22,12 +21,16 @@ class TreeWidget(QTreeWidget):
         """Initializes the widget
         :param cb_dropped: Callback dropped
         """
-        super().__init__()
+        super(TreeWidget, self).__init__()
 
         self.cb_dropped = cb_dropped
 
     # @override
     def dropEvent(self, event):
+        """dropEvent
+
+        :param event: event
+        """
         logging.debug('Drop Event')
 
         source_item = None

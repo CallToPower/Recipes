@@ -8,9 +8,7 @@
 
 """The I18n"""
 
-import os
 import logging
-import json
 
 from lib.Utils import load_languages, load_i18n
 
@@ -34,7 +32,7 @@ class I18n():
     def _init(self):
         """Initializes the translations"""
         if not self.language_main in self.languages:
-            logging.warn('Language "{}" not found, falling back to "{}"'.format(self.language_main, self.languages[0]))
+            logging.warning('Language "%s" not found, falling back to "%s"', self.language_main, self.languages[0])
             self.language_main = self.languages[0]
         lang = self.languages[self.languages.index(self.language_main)]
         self._load_language(lang)
@@ -50,7 +48,7 @@ class I18n():
         
         :param lang: The language
         """
-        logging.info('Changing language to {}'.format(lang))
+        logging.info('Changing language to %s', lang)
         self.language_main = lang
         self._init()
 
@@ -63,5 +61,5 @@ class I18n():
         try:
             return self._translations[key]
         except KeyError as exception:
-            logging.error('Returning default for key "{}": "{}"'.format(key, exception))
+            logging.error('Returning default for key "%s": "%s"', key, exception)
             return default

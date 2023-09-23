@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.0
+
+- Cleanup and bug fixing
+- Updated dependency versions
+
 ## v1.2.1
 
 - Fixed saving recipes with a special name

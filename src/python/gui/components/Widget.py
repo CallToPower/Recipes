@@ -18,13 +18,11 @@ from PyQt5.QtWidgets import QAbstractItemView, QMenu, QAction, QSizePolicy, QWid
 
 from gui.data.IconDefinitions import FOLDER, FILE, DELETE, EDIT, MOVE, CREATE_FOLDER, CREATE_FILE, OPEN_EXTERNAL
 from gui.components.TreeWidget import TreeWidget
-from lib.Utils import load_json_recipe
-from lib.AppConfig import app_conf_get
-
-from classes.Recipe import Recipe
-from gui.enums.Language import Language
 from gui.components.RecipeWindow import RecipeWindow
-from lib.Utils import save_recipe
+
+from lib.AppConfig import app_conf_get
+from lib.Utils import load_json_recipe, save_recipe
+from classes.Recipe import Recipe
 
 
 class Widget(QWidget):
@@ -37,19 +35,24 @@ class Widget(QWidget):
         :param log: The (end user) message log
         :param image_cache: The image cache
         """
-        super().__init__()
+        super(Widget, self).__init__()
 
         logging.debug('Initializing Widget')
 
         self.i18n = i18n
         self.log = log
         self.image_cache = image_cache
-        
+
         self.recipe_suffix = app_conf_get('suffix.recipe', '.json')
 
         self.components = []
         self.recipe_windows = {}
         self.current_folder = app_conf_get('recipes.folder')
+
+        self._treewidget = None
+        self.progressbar = QProgressBar()
+        self.grid = QGridLayout()
+        self.is_enabled = False
 
     def init_ui(self):
         """Initiates application UI"""
@@ -123,8 +126,7 @@ class Widget(QWidget):
         #self._treewidget.setHeaderLabel(curr_folder)
         self._treewidget.itemDoubleClicked.connect(self._on_item_double_clicked)
         self.components.append(self._treewidget)
-        
-        self.progressbar = QProgressBar()
+
         self.progressbar.setTextVisible(False)
 
         try:
@@ -143,7 +145,6 @@ class Widget(QWidget):
 
         # Layout
 
-        self.grid = QGridLayout()
         self.grid.setSpacing(10)
 
         # self.grid.addWidget(widget, row, column, rowspan, columnspan)
@@ -174,16 +175,14 @@ class Widget(QWidget):
 
     def _open_recipe_folder(self):
         """Opens the recipe folder in the native file explorer"""
-        logging.debug('Open recipe folder "{}"'.format(app_conf_get('recipes.folder')))
+        logging.debug('Open recipe folder "%s"', app_conf_get('recipes.folder'))
         if app_conf_get('recipes.folder'):
             if not QDesktopServices.openUrl(QUrl.fromLocalFile(app_conf_get('recipes.folder'))):
-                logging.error('Could not open recipe folder "{}" in native file explorer'.format(app_conf_get('recipes.folder')))
+                logging.error('Could not open recipe folder "%s" in native file explorer', app_conf_get('recipes.folder'))
         else:
-            logging.warn('Recipe folder not set, yet')
+            logging.warning('Recipe folder not set, yet')
 
     def _open_menu(self, position):
-        indexes = self._treewidget.selectedIndexes()
-
         menu = QMenu()
 
         action_delete = QAction(self.i18n.translate('GUI.TREEVIEW.MENU.RIGHTCLICK.DELETE', 'Delete'), self)
@@ -221,7 +220,7 @@ class Widget(QWidget):
         :param name: The file/folder name
         :return: True if yes, False else
         """
-        msg = self.i18n.translate('GUI.TREEVIEW.MESSAGE_BOX.DELETE.{}'.format('FILE' if is_file else 'DIRECTORY')).format(name)
+        msg = self.i18n.translate(f'GUI.TREEVIEW.MESSAGE_BOX.DELETE.{"FILE" if is_file else "DIRECTORY"}').format(name)
         title = self.i18n.translate('GUI.TREEVIEW.MESSAGE_BOX.DELETE')
         message_box = QMessageBox(QMessageBox.Information, title, msg, buttons=QMessageBox.Yes | QMessageBox.No)
         logo = self.image_cache.get_or_load_pixmap('img.logo_app', 'logo-app.png')
@@ -235,22 +234,22 @@ class Widget(QWidget):
         """Asks for a new folder name
         :param is_file: Flag whether is a file or a folder
         """
-        name, ok = QInputDialog().getText(self, self.i18n.translate('GUI.TREEVIEW.ACTIONS.{}'.format('NEW_FILE' if is_file else 'NEW_FOLDER')), self.i18n.translate('GUI.TREEVIEW.ACTIONS.{}.TEXT'.format('NEW_FILE' if is_file else 'NEW_FOLDER')), QLineEdit.Normal, '')
-        return name, ok
+        name, is_ok = QInputDialog().getText(self, self.i18n.translate(f'GUI.TREEVIEW.ACTIONS.{"NEW_FILE" if is_file else "NEW_FOLDER"}'), self.i18n.translate(f'GUI.TREEVIEW.ACTIONS.{"NEW_FILE" if is_file else "NEW_FOLDER"}.TEXT'), QLineEdit.Normal, '')
+        return name, is_ok
 
     def _get_file_name(self, filename, is_file=False):
         """Asks for a new name
         :param is_file: Flag whether is a file or a folder
         """
-        name, ok = QInputDialog().getText(self, self.i18n.translate('GUI.TREEVIEW.ACTIONS.{}'.format('EDIT_FILE' if is_file else 'EDIT_FOLDER')), self.i18n.translate('GUI.TREEVIEW.ACTIONS.{}.TEXT'.format('EDIT_FILE' if is_file else 'EDIT_FOLDER')), QLineEdit.Normal, filename)
-        return name, ok
+        name, is_ok = QInputDialog().getText(self, self.i18n.translate(f'GUI.TREEVIEW.ACTIONS.{"EDIT_FILE" if is_file else "EDIT_FOLDER"}'), self.i18n.translate(f'GUI.TREEVIEW.ACTIONS.{"EDIT_FILE" if is_file else "EDIT_FOLDER"}.TEXT'), QLineEdit.Normal, filename)
+        return name, is_ok
 
     def _select_folder(self, directory):
         """Select folder dialog
         :param directory: The directory
         """
-        filter = None
-        dialog = QFileDialog(self, self.i18n.translate('GUI.TREEVIEW.MESSAGE_BOX.SELECT_FOLDER'), directory, filter)
+        file_filter = None
+        dialog = QFileDialog(self, self.i18n.translate('GUI.TREEVIEW.MESSAGE_BOX.SELECT_FOLDER'), directory, file_filter)
         dialog.setFileMode(QFileDialog.DirectoryOnly)
         if dialog.exec_() == QDialog.Accepted:
             return dialog.selectedFiles()[0], True
@@ -286,14 +285,14 @@ class Widget(QWidget):
             if is_dir:
                 is_subfolder_of = destination_folder.startswith(source_folder)
             if source_folder != destination_folder and not is_subfolder_of:
-                logging.debug('Move "{}" to "{}"'.format(source_path_info, destination_folder))
+                logging.debug('Move "%s" to "%s"', source_path_info, destination_folder)
                 try:
                     shutil.move(source_path_info, destination_folder)
-                    self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_{}'.format('DIRECTORY' if is_dir else 'FILE')).format(os.path.basename(source_path_info), os.path.basename(destination_folder)))
+                    self.log(self.i18n.translate(f'GUI.TREEVIEW.LOG.MOVE_{"DIRECTORY" if is_dir else "FILE"}').format(os.path.basename(source_path_info), os.path.basename(destination_folder)))
                     moved = True
-                except Exception as e:
-                    self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_{}.FAIL'.format('DIRECTORY' if is_dir else 'FILE')).format(os.path.basename(dirname), os.path.basename(destination_folder)))
-                    logging.error('Failed to move "{}" to "{}": {}'.format(source_path_info, destination_folder, e))
+                except Exception as ex:
+                    self.log(self.i18n.translate(f'GUI.TREEVIEW.LOG.MOVE_{"DIRECTORY" if is_dir else "FILE"}.FAIL').format(os.path.basename(source_path_info), os.path.basename(destination_folder)))
+                    logging.error('Failed to move "%s" to "%s": %s', source_path_info, destination_folder, ex)
             else:
                 logging.info('Same folder, not moving')
 
@@ -308,30 +307,29 @@ class Widget(QWidget):
         if curr_item:
             data = curr_item.data(0, Qt.UserRole)
             path_info = data['path_info']
-            folder = data['folder']
             filename = data['filename']
             deleted = False
             if os.path.isdir(path_info):
-                logging.info('Delete folder "{}"'.format(path_info))
+                logging.info('Delete folder "%s"', path_info)
                 if self._messagebox_delete_yesno(False, filename):
                     try:
                         shutil.rmtree(path_info)
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_DIRECTORY').format(filename))
                         deleted = True
-                    except Exception as e:
+                    except Exception as ex:
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_DIRECTORY.FAIL').format(filename))
-                        logging.error('Failed to remove directory "{}": {}'.format(path_info, e))
+                        logging.error('Failed to remove directory "%s": %s', path_info, ex)
             elif os.path.isfile(path_info) and path_info.endswith(self.recipe_suffix):
-                logging.info('Delete file "{}"'.format(path_info))
+                logging.info('Delete file "%s"', path_info)
                 _filename = filename[:-len(self.recipe_suffix)]
                 if self._messagebox_delete_yesno(True, _filename):
                     try:
                         os.remove(path_info)
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_FILE').format(_filename))
                         deleted = True
-                    except Exception as e:
+                    except Exception as ex:
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.DELETE_FILE.FAIL').format(_filename))
-                        logging.error('Failed to remove directory "{}": {}'.format(path_info, e))
+                        logging.error('Failed to remove directory "%s": %s', path_info, ex)
             if deleted:
                 logging.debug('Refreshing view')
                 self._refresh_view(do_log=False)
@@ -345,38 +343,37 @@ class Widget(QWidget):
         if curr_item:
             data = curr_item.data(0, Qt.UserRole)
             path_info = data['path_info']
-            folder = data['folder']
             filename = data['filename']
             edited = False
-            logging.info('Move "{}"'.format(path_info))
+            logging.info('Move "%s"', path_info)
             if os.path.isdir(path_info):
                 name, ok = self._get_file_name(filename, is_file=False)
                 if ok:
                     dirname = os.path.dirname(path_info)
                     new_path = os.path.join(dirname, name)
-                    logging.info('Moving "{}" to "{}"'.format(path_info, new_path))
+                    logging.info('Moving "%s" to "%s"', path_info, new_path)
                     try:
                         shutil.move(path_info, new_path)
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.EDIT_FOLDER.SUCCESS').format(filename, name))
                         edited = True
-                    except Exception as e:
+                    except Exception as ex:
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.EDIT_FOLDER.FAIL').format(filename, new_path))
-                        logging.error('Failed to edit directory "{}" to "{}": {}'.format(filename, new_path, e))
+                        logging.error('Failed to edit directory "%s" to "%s": %s', filename, new_path, ex)
             elif os.path.isfile(path_info) and path_info.endswith(self.recipe_suffix):
                 _filename = filename[:-len(self.recipe_suffix)]
-                name, ok = self._get_file_name(_filename, is_file=False)
-                if ok:
+                name, is_ok = self._get_file_name(_filename, is_file=False)
+                if is_ok:
                     dirname = os.path.dirname(path_info)
-                    _name = '{}{}'.format(name, self.recipe_suffix)
+                    _name = f'{name}{self.recipe_suffix}'
                     new_path = os.path.join(dirname, _name)
-                    logging.info('Moving "{}" to "{}"'.format(path_info, new_path))
+                    logging.info('Moving "%s" to "%s"', path_info, new_path)
                     try:
                         shutil.move(path_info, new_path)
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.EDIT_FILE.SUCCESS').format(_filename, name))
                         edited = True
-                    except Exception as e:
+                    except Exception as ex:
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.EDIT_FILE.FAIL').format(_filename, name))
-                        logging.error('Failed to edit file "{}" to "{}": {}'.format(_filename, name, e))
+                        logging.error('Failed to edit file "%s" to "%s": %s', _filename, name, ex)
             if edited:
                 logging.debug('Refreshing view')
                 self._refresh_view(do_log=False)
@@ -390,34 +387,33 @@ class Widget(QWidget):
         if curr_item:
             data = curr_item.data(0, Qt.UserRole)
             path_info = data['path_info']
-            folder = data['folder']
             moved = False
             if os.path.isdir(path_info):
                 dirname = path_info
-                logging.info('Move folder "{}"'.format(dirname))
+                logging.info('Move folder "%s"', dirname)
                 selected_folder, is_selected = self._select_folder(dirname)
                 if is_selected and dirname != selected_folder:
-                    logging.info('Moving folder "{}"'.format(selected_folder))
+                    logging.info('Moving folder "%s"', selected_folder)
                     try:
                         shutil.move(dirname, selected_folder)
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_DIRECTORY').format(os.path.basename(dirname), os.path.basename(selected_folder)))
                         moved = True
-                    except Exception as e:
+                    except Exception as ex:
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_DIRECTORY.FAIL').format(os.path.basename(dirname), os.path.basename(selected_folder)))
-                        logging.error('Failed to move directory "{}" to "{}": {}'.format(dirname, selected_folder, e))
+                        logging.error('Failed to move directory "%s" to "%s": %s', dirname, selected_folder, ex)
             elif os.path.isfile(path_info):
                 dirname = os.path.dirname(path_info)
-                logging.info('Move file "{}"'.format(path_info))
+                logging.info('Move file "%s"', path_info)
                 selected_folder, is_selected = self._select_folder(dirname)
                 if is_selected and dirname != selected_folder:
-                    logging.info('Moving file "{}"'.format(selected_folder))
+                    logging.info('Moving file "%s"', selected_folder)
                     try:
                         shutil.move(path_info, selected_folder)
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_FILE').format(os.path.basename(dirname), os.path.basename(selected_folder)))
                         moved = True
-                    except Exception as e:
+                    except Exception as ex:
                         self.log(self.i18n.translate('GUI.TREEVIEW.LOG.MOVE_FILE.FAIL').format(os.path.basename(dirname), os.path.basename(selected_folder)))
-                        logging.error('Failed to move file "{}" to "{}": {}'.format(dirname, selected_folder, e))
+                        logging.error('Failed to move file "%s" to "%s": %s', dirname, selected_folder, ex)
             if moved:
                 logging.debug('Refreshing view')
                 self._refresh_view(do_log=False)
@@ -434,11 +430,11 @@ class Widget(QWidget):
         dirname = path_info
         if os.path.isfile(path_info):
             dirname = os.path.dirname(path_info)
-        foldername, ok = self._get_new_file_name(is_file=False)
-        if ok and foldername:
+        foldername, is_ok = self._get_new_file_name(is_file=False)
+        if is_ok and foldername:
             folder = os.path.join(dirname, foldername)
             if not os.path.exists(folder):
-                logging.info('Creating folder "{}"'.format(folder))
+                logging.info('Creating folder "%s"', folder)
                 os.makedirs(folder)
                 self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FOLDER.SUCCESS').format(foldername))
                 logging.debug('Refreshing view')
@@ -446,7 +442,7 @@ class Widget(QWidget):
                 self._enable()
             else:
                 self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FOLDER.FAIL.EXISTS').format(foldername))
-                logging.error('Folder "{}" already exists'.format(folder))
+                logging.error('Folder "%s" already exists', folder)
 
     def _create_recipe(self):
         """Creates a new recipe"""
@@ -459,13 +455,13 @@ class Widget(QWidget):
         dirname = path_info
         if os.path.isfile(path_info):
             dirname = os.path.dirname(path_info)
-        filename, ok = self._get_new_file_name(is_file=True)
-        if ok and filename:
+        filename, is_ok = self._get_new_file_name(is_file=True)
+        if is_ok and filename:
             file = os.path.join(dirname, filename)
             if not file.endswith(self.recipe_suffix):
                 file = file + self.recipe_suffix
             if not os.path.exists(file):
-                logging.info('Creating file "{}"'.format(file))
+                logging.info('Creating file "%s"', file)
                 recipe = Recipe()
                 if save_recipe(recipe, file):
                     self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FILE.SUCCESS').format(filename))
@@ -473,23 +469,20 @@ class Widget(QWidget):
                     self._refresh_view(do_log=False)
                     self._enable()
                 else:
-                    logging.error('Could not create file "{}"'.format(file))
+                    logging.error('Could not create file "%s"', file)
             else:
                 self.log(self.i18n.translate('GUI.TREEVIEW.LOG.CREATE_FOLDER.FAIL.EXISTS').format(filename))
-                logging.error('Folder "{}" already exists'.format(folder))
+                logging.error('File "%s" already exists', filename)
 
-    def _on_item_double_clicked(self, item, col):
+    def _on_item_double_clicked(self, item, _col):
         """When an item in the tree widget has been double-clicked
         :param item: The item
-        :param col: The column
+        :param _col: The column
         """
         data = item.data(0, Qt.UserRole)
         path_info = data['path_info']
-        folder = data['folder']
-        startpath = data['startpath']
-        filename = data['filename']
         if os.path.isfile(path_info) and path_info.endswith(self.recipe_suffix):
-            logging.info('Double-clicked "{}", loading recipe'.format(path_info))
+            logging.info('Double-clicked "%s", loading recipe', path_info)
             json_recipe = load_json_recipe(path_info)
             if json_recipe:
                 if path_info in self.recipe_windows:
@@ -502,15 +495,15 @@ class Widget(QWidget):
                     recipe_window.init_ui()
                     recipe_window.show()
             else:
-                logging.error('Could not load recipe "{}"'.format(path_info))
+                logging.error('Could not load recipe "%s"', path_info)
         else:
-            logging.error('Does not appear to be a recipe: "{}"'.format(path_info))
+            logging.error('Does not appear to be a recipe: "%s"', path_info)
 
     def _recipe_window_closed(self, id):
         """On recipe window close
         :param id: The ID of the window
         """
-        logging.debug('Recipe window "{}" closed'.format(id))
+        logging.debug('Recipe window "%s" closed', id)
         if id in self.recipe_windows:
             del self.recipe_windows[id]
 

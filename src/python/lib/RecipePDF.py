@@ -1,8 +1,19 @@
 from fpdf import FPDF
 
 class RecipePDF(FPDF):
+    """RecipePDF"""
+
+    def __init__(self, *args, **kwargs):
+        """Initializes the RecipePDF
+        """
+        super(RecipePDF, self).__init__(*args, **kwargs)
+        self.recipe = None
 
     def set_recipe(self, recipe):
+        """Sets the recipe
+
+        :param recipe: The recipe
+        """
         self.recipe = recipe
 
     def header(self):

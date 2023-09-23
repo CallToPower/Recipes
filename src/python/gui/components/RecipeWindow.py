@@ -38,7 +38,7 @@ class RecipeWindow(QMainWindow):
         :param recipe: The Recipe
         :param close_cb: Callback when the window closes
         """
-        super().__init__()
+        super(RecipeWindow, self).__init__()
 
         logging.debug('Initializing RecipeWindow')
 
@@ -56,6 +56,9 @@ class RecipeWindow(QMainWindow):
         self.label_info_text = None
 
         self._changed = False
+
+        self.table_ingredients = None
+        self.model_ingredients = None
 
     def init_ui(self):
         """Initiates UI"""
@@ -183,7 +186,7 @@ class RecipeWindow(QMainWindow):
         button_edit_info.setIcon(icon)
         button_edit_info.clicked[bool].connect(self._edit_info)
 
-        self.label_info_text = QLabel(self._get_short(self.recipe.information))
+        self.label_info_text = QLabel(self._get_short_recipe_information())
         self.label_info_text.setFont(font_label_text)
         self.label_info_text.setAlignment(Qt.AlignLeft)
 
@@ -257,7 +260,7 @@ class RecipeWindow(QMainWindow):
         :param from_index: From index
         :param to_index: To index
         """
-        logging.debug('Ingredients dropped from {} to {}'.format(from_index, to_index))
+        logging.debug('Ingredients dropped from %d to %d', from_index, to_index)
         self.model_ingredients.relocate_row(from_index, to_index)
 
     def _steps_dropped(self, from_index, to_index):
@@ -265,14 +268,14 @@ class RecipeWindow(QMainWindow):
         :param from_index: From index
         :param to_index: To index
         """
-        logging.debug('Steps dropped from {} to {}'.format(from_index, to_index))
+        logging.debug('Steps dropped from %d to %d', from_index, to_index)
         self.model_steps.relocate_row(from_index, to_index)
 
     def _edit_recipe_name(self):
         """Edits the recipe name"""
         logging.debug('Edit recipe name')
-        name, ok = QInputDialog().getText(self, self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_RECIPE_NAME'), self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_RECIPE_NAME.TEXT'), QLineEdit.Normal, self.recipe.name)
-        if ok and name:
+        name, is_ok = QInputDialog().getText(self, self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_RECIPE_NAME'), self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_RECIPE_NAME.TEXT'), QLineEdit.Normal, self.recipe.name)
+        if is_ok and name:
             if name != self.recipe.name:
                 self.recipe.name = name
                 self.label_header.setText(self.recipe.name)
@@ -292,14 +295,14 @@ class RecipeWindow(QMainWindow):
 
         header_v = table.verticalHeader()
         if header_v:
-            for i in range(0, max(0, len(model._headers_v))):
+            for i in range(0, max(0, len(model.headers_v))):
                 header_v.setSectionResizeMode(i, QHeaderView.ResizeToContents)
 
         header_h = table.horizontalHeader()
         if header_h:
-            for i in range(0, max(0, len(model._headers_h))):
+            for i in range(0, max(0, len(model.headers_h))):
                 header_h.setSectionResizeMode(i, QHeaderView.ResizeToContents)
-            header_h.setSectionResizeMode(max(0, len(model._headers_h) - 1), QHeaderView.Stretch)
+            header_h.setSectionResizeMode(max(0, len(model.headers_h) - 1), QHeaderView.Stretch)
 
     def _close_yesno(self):
         """Displays a message box with yes/no
@@ -344,14 +347,14 @@ class RecipeWindow(QMainWindow):
             if close:
                 self._close()
             return
-        logging.info('Saving recipe to "{}"'.format(self.path_info))
+        logging.info('Saving recipe to "%s"', self.path_info)
         if save_recipe(self.recipe, self.path_info):
             self._changed = False
             self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE.SAVED').format(self.recipe.name))
             if close:
                 self._close()
         else:
-            logging.info('Could not save recipe to "{}"'.format(self.path_info))
+            logging.info('Could not save recipe to "%s"', self.path_info)
             self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE.SAVED.FAIL').format(self.recipe.name))
 
     def _save_close(self):
@@ -365,7 +368,7 @@ class RecipeWindow(QMainWindow):
         rows = sorted(set(index.row() for index in self.table_ingredients.selectedIndexes()))
         if rows:
             for row in rows:
-                logging.info('Remove row #{}'.format(row))
+                logging.info('Remove row #%d', row)
                 self.model_ingredients.remove_row(row)
             self._changed = True
 
@@ -382,7 +385,7 @@ class RecipeWindow(QMainWindow):
         rows = sorted(set(index.row() for index in self.table_steps.selectedIndexes()))
         if rows:
             for row in rows:
-                logging.info('Remove row #{}'.format(row))
+                logging.info('Remove row #%d', row)
                 self.model_steps.remove_row(row)
             self._changed = True
 
@@ -396,11 +399,11 @@ class RecipeWindow(QMainWindow):
     def _edit_info(self):
         """Edits information"""
         logging.debug('Edit information')
-        info, ok = QInputDialog().getText(self, self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_INFORMATION'), self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_INFORMATION.TEXT'), QLineEdit.Normal, self.recipe.information)
-        if ok and info:
+        info, is_ok = QInputDialog().getText(self, self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_INFORMATION'), self.i18n.translate('GUI.RECIPE.VIEW.ACTIONS.EDIT_INFORMATION.TEXT'), QLineEdit.Normal, self.recipe.information)
+        if is_ok and info:
             if info != self.recipe.information:
                 self.recipe.information = info
-                self.label_info_text.setText(self._get_short(self.recipe.information))
+                self.label_info_text.setText(self._get_short_recipe_information())
                 self.setWindowTitle(self.recipe.information)
                 self._changed = True
             else:
@@ -436,9 +439,8 @@ class RecipeWindow(QMainWindow):
         self.move(int((screen.width() - self.geometry().width()) / 2),
                   int((screen.height() - self.geometry().height()) / 2))
 
-    def _get_short(self, str, max_length=app_conf_get('info.length.max', 80)):
+    def _get_short_recipe_information(self, max_length=app_conf_get('info.length.max', 80)):
         """Returns a shortened string
-        :param str: String to shorten
         :param max_length: Max string length
         """
         info = self.recipe.information
@@ -474,17 +476,16 @@ class RecipeWindow(QMainWindow):
                 self._restore(pdf)
                 pdf.ln(line_height_base)
                 outputname = '{}/{}.pdf'.format(dirname, self._clean_recipe_name(self.recipe.name))
-                logging.info('Saving pdf to "{}"'.format(outputname))
+                logging.info('Saving pdf to "%s"', outputname)
                 pdf.output(outputname)
                 self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE.EXPORTED').format(self.recipe.name))
                 self._open_export_folder(dirname)
-            except Exception as e:
-                logging.error('Failed to export recipe "{}" to "{}"'.format(self.recipe.name, dirname))
+            except Exception as ex:
+                logging.error('Failed to export recipe "%s" to "%s": %s', self.recipe.name, dirname, ex)
                 self.show_message(self.i18n.translate('GUI.RECIPE.LOG.RECIPE.EXPORTED.FAIL').format(self.recipe.name))
-                logging.error(e)
 
     def _clean_recipe_name(self, rname):
-        return re.sub('\W+', '-', rname)
+        return re.sub(r'\W+', '-', rname)
 
     def _restore(self, pdf):
         """Restores color and font
@@ -516,17 +517,17 @@ class RecipeWindow(QMainWindow):
         pdf.ln()
         fill = False
         for _i, ingredient in enumerate(self.recipe.ingredients):
-            t1 = self._get_none_safe(ingredient.quantity)
-            t2 = self._get_none_safe(ingredient.name)
-            t3 = self._get_none_safe(ingredient.addition)
-            test_split_1 = pdf.multi_cell(col_widths[0], line_height_base, t1, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
-            test_split_2 = pdf.multi_cell(col_widths[1], line_height_base, t2, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
-            test_split_3 = pdf.multi_cell(col_widths[2], line_height_base, t3, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
+            ingredient_quantity = self._get_none_safe(ingredient.quantity)
+            ingredient_name = self._get_none_safe(ingredient.name)
+            ingredient_addition = self._get_none_safe(ingredient.addition)
+            test_split_1 = pdf.multi_cell(col_widths[0], line_height_base, ingredient_quantity, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
+            test_split_2 = pdf.multi_cell(col_widths[1], line_height_base, ingredient_name, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
+            test_split_3 = pdf.multi_cell(col_widths[2], line_height_base, ingredient_addition, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
             test_split_max = max(len(test_split_1), len(test_split_2), len(test_split_3))
             line_height = pdf.font_size + pdf.font_size * test_split_max
-            pdf.multi_cell(col_widths[0], line_height, t1, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
-            pdf.multi_cell(col_widths[1], line_height, t2, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
-            pdf.multi_cell(col_widths[2], line_height, t3, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
+            pdf.multi_cell(col_widths[0], line_height, ingredient_quantity, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
+            pdf.multi_cell(col_widths[1], line_height, ingredient_name, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
+            pdf.multi_cell(col_widths[2], line_height, ingredient_addition, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
             pdf.ln(line_height)
             fill = not fill
         pdf.cell(sum(col_widths), 0, '', border='T')
@@ -555,7 +556,7 @@ class RecipeWindow(QMainWindow):
             step_text = self._get_none_safe(step)
             test_split = pdf.multi_cell(col_widths[1], line_height_base, step_text, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, split_only=True)
             line_height = pdf.font_size + pdf.font_size * len(test_split)
-            pdf.multi_cell(col_widths[0], line_height, '{}'.format(i + 1), border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
+            pdf.multi_cell(col_widths[0], line_height, f'{i + 1}', border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
             pdf.multi_cell(col_widths[1], line_height, step_text, border='LR', new_x='RIGHT', new_y='TOP', max_line_height=pdf.font_size, fill=fill)
             pdf.ln(line_height)
             fill = not fill
@@ -592,7 +593,7 @@ class RecipeWindow(QMainWindow):
 
         dirname = QFileDialog.getExistingDirectory(self, self.i18n.translate('GUI.SELECT_EXPORT_DIR.DIALOG.SELECT'), app_conf_get('recipes.folder'), QFileDialog.ShowDirsOnly)
         if dirname:
-            logging.info('Selected export directory: "{}"'.format(dirname))
+            logging.info('Selected export directory: "%s"', dirname)
             return True, dirname
         else:
             logging.debug('Cancelled selecting output directory')
@@ -600,13 +601,12 @@ class RecipeWindow(QMainWindow):
 
     def _open_export_folder(self, folder):
         """Opens the export folder in the native file explorer"""
-        logging.debug('Open export folder "{}"'.format(folder))
+        logging.debug('Open export folder "%s"', folder)
         if folder:
             if not QDesktopServices.openUrl(QUrl.fromLocalFile(folder)):
-                logging.error('Could not open export folder "{}" in native file explorer'.format(folder))
+                logging.error('Could not open export folder "%s" in native file explorer', folder)
         else:
-            logging.warn('Export folder not set')
-
+            logging.warning('Export folder not set')
 
     # @override
     def closeEvent(self, event):

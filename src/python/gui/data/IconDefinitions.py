@@ -14,9 +14,19 @@ _FOLDER_FLAGS = 'flags'
 _FOLDER_ICONS = 'icons'
 
 def get_flag(lang):
-    return Icon('img.flag.{}'.format(lang), '{}.png'.format(lang), _FOLDER_FLAGS)
+    """Returns the flag
+
+    :param lang: The language
+    :return: The flag as icon
+    """
+    return Icon(f'img.flag.{lang}', f'{lang}.png', _FOLDER_FLAGS)
 
 def get_icon(key, value):
+    """Returns the icon
+
+    :param value: The value
+    :return: The icon
+    """
     return Icon(key, value, _FOLDER_ICONS)
 
 # Icons

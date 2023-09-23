@@ -6,11 +6,11 @@
 # This file is part of Rezepte.
 #
 
+"""Recipe"""
+
 import logging
 
 from classes.Ingredient import Ingredient
-
-"""Recipe"""
 
 class Recipe():
     """Recipe"""
@@ -46,4 +46,5 @@ class Recipe():
 
     def __str__(self):
         """to string"""
-        return 'Recipe[name="{}",\ningredients=[{}],\nsteps="{}",\ninformation={}]'.format(self.name, ', '.join(str(x) for x in self.ingredients), self.steps, self.information)
+        ingredients = ', '.join(str(x) for x in self.ingredients)
+        return f'Recipe[name="{self.name}",\ningredients=[{ingredients}],\nsteps="{self.steps}",\ninformation={self.information}]'

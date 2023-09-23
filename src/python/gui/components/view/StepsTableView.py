@@ -6,13 +6,16 @@
 # This file is part of Rezepte.
 #
 
+"""StepsTableView"""
+
 import logging
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTableView
 
 class StepsTableView(QTableView):
-    
+    """StepsTableView"""
+
     bgcolor_header_css = 'background-color: rgb(230, 230, 230);'
 
     def __init__(self, cb_dropped=None):
@@ -36,13 +39,14 @@ class StepsTableView(QTableView):
 
     # @override
     def dropEvent(self, event):
+        """dropEvent
+
+        :param event: event
+        """
         logging.debug('Drop Event')
 
-        source_item = None
-        destination_item = None
-
         source = event.source()
-        
+
         if source is not self or (event.dropAction() != Qt.MoveAction and self.dragDropMode() != QtWidgets.QAbstractItemView.InternalMove):
             super().dropEvent(event)
 

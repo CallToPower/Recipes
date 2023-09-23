@@ -14,14 +14,14 @@ from pathlib import Path
 
 _app_config = {
     'author': 'Denis Meyer',
-    'version': '1.2.1',
-    'build': '2023-09-13-1',
+    'version': '1.3.0',
+    'build': '2023-09-23-1',
     'copyright': '© 2022-2023 Denis Meyer',
     'conf.folder': 'Recipes',
     'conf.name': 'conf.json',
     'language.main': 'en',
     'suffix.recipe': '.json',
-    'recipes.folder': str(Path.home()) + '/Recipes/Recipes-Cookbook',
+    'recipes.folder': str(Path.home()) + '/Recipes/Cookbook',
     'about.logo.scaled.width': 280,
     'about.logo.scaled.height': 80,
     'label.header.font.size': 16,
@@ -64,8 +64,8 @@ def get_public_values():
             'logging.loglevel'
             ]
     _dict = {}
-    for v in vals:
-        _dict[v] = app_conf_get(v)
+    for val in vals:
+        _dict[val] = app_conf_get(val)
 
     return _dict
 
@@ -86,5 +86,5 @@ def app_conf_get(key, default=''):
     try:
         return _app_config[key]
     except KeyError as exception:
-        logging.warn('Returning default for key "{}": "{}"'.format(key, exception))
+        logging.warning('Returning default for key "%s": "%s"', key, exception)
         return default

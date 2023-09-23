@@ -43,4 +43,4 @@ class Ingredient():
 
     def __str__(self):
         """to string"""
-        return 'Ingredient[quantity={}, name={}, addition={}]'.format(self.quantity, self.name, self.addition)
+        return f'Ingredient[quantity={self.quantity}, name={self.name}, addition={self.addition}]'
